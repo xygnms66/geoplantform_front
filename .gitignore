@@ -1,0 +1,26 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+build/
+
+# TypeScript 编译缓存
+*.tsbuildinfo
+
+# 编辑器配置（可选，看团队习惯）
+.vscode/
+.idea/
+
+# 环境变量（如果项目里有的话，切记别提交密钥）
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+npm-debug.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
