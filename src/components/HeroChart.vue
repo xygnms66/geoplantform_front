@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
-import * as echarts from "echarts";
+import { ref, onMounted, onUnmounted } from "vue";
 
 const props = defineProps<{
   projectCount: number;
@@ -10,10 +9,11 @@ const props = defineProps<{
 }>();
 
 const chartRef = ref<HTMLDivElement>();
-let chart: echarts.ECharts | null = null;
+let chart: any = null;
 
-function initChart() {
+async function initChart() {
   if (!chartRef.value) return;
+  const echarts = await import("echarts");
   chart = echarts.init(chartRef.value, undefined, { renderer: "canvas" });
 
   const items = [

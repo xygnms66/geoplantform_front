@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import * as THREE from "three";
 
 const mountRef = ref<HTMLDivElement>();
+let cleanup: (() => void) | null = null;
 
-onMounted(() => {
+onMounted(async () => {
   const mount = mountRef.value;
   if (!mount) return;
+
+  const THREE = await import("three");
 
   const scene = new THREE.Scene();
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -108,7 +110,7 @@ onMounted(() => {
   };
   frameId = window.requestAnimationFrame(animate);
 
-  onUnmounted(() => {
+  cleanup = () => {
     window.cancelAnimationFrame(frameId);
     observer.disconnect();
     mount.removeChild(renderer.domElement);
@@ -121,7 +123,11 @@ onMounted(() => {
     });
     starsGeometry.dispose();
     renderer.dispose();
-  });
+  };
+});
+
+onUnmounted(() => {
+  cleanup?.();
 });
 </script>
 

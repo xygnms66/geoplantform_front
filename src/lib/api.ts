@@ -11,7 +11,7 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1200);
+    const timeout = setTimeout(() => controller.abort(), 300);
     const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal });
     clearTimeout(timeout);
 
