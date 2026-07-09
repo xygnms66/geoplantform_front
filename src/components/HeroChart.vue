@@ -26,7 +26,7 @@ function initChart() {
   chart.setOption({
     animationDuration: 1000,
     animationEasing: "cubicOut",
-    grid: { left: 10, right: 10, top: 6, bottom: 6 },
+    grid: { left: 10, right: 10, top: 32, bottom: 6 },
     xAxis: {
       type: "category",
       data: items.map((d) => d.name),
