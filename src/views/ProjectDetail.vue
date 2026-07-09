@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { getAchievements, getProject, getProjects } from "@/lib/api";
 import type { Achievement, Project } from "@/types";
@@ -129,7 +129,7 @@ const projectAchievements = computed(() =>
   achievements.value.filter((item) => item.project_id === project.value?.id),
 );
 
-onMounted(async () => {
+async function loadProjectData() {
   const slug = route.params.slug as string;
   const [projectDetail, projectList, achievementList] = await Promise.all([
     getProject(slug), getProjects(), getAchievements(),
@@ -137,6 +137,13 @@ onMounted(async () => {
   project.value = projectDetail;
   allProjects.value = projectList;
   achievements.value = achievementList;
+}
+
+onMounted(loadProjectData);
+
+watch(() => route.params.slug, () => {
+  loadProjectData();
+  window.scrollTo(0, 0);
 });
 </script>
 
