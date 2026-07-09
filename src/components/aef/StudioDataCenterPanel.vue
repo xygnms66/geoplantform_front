@@ -280,12 +280,12 @@ function statusClass(status: string) {
             <el-row :gutter="16">
               <el-col :span="12">
                 <el-form-item label="开始时间">
-                  <el-date-picker v-model="form.begin_time" type="date" placeholder="选择日期" value-format="YYYY-MM" style="width:100%" popper-class="dark-popper" />
+                  <el-date-picker v-model="form.begin_time" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width:100%" popper-class="dark-popper" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="结束时间">
-                  <el-date-picker v-model="form.end_time" type="date" placeholder="选择日期" value-format="YYYY-MM" style="width:100%" popper-class="dark-popper" />
+                  <el-date-picker v-model="form.end_time" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width:100%" popper-class="dark-popper" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -380,9 +380,15 @@ function statusClass(status: string) {
             </el-form-item>
 
             <el-form-item label="存储状态">
-              <el-radio-group v-model="form.storage_status">
-                <el-radio-button value="local">本地</el-radio-button>
-                <el-radio-button value="web">网站</el-radio-button>
+              <el-radio-group v-model="form.storage_status" class="storage-toggle">
+                <el-radio-button value="local">
+                  <svg class="radio-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  本地存储
+                </el-radio-button>
+                <el-radio-button value="web">
+                  <svg class="radio-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  网站链接
+                </el-radio-button>
               </el-radio-group>
             </el-form-item>
 
@@ -1010,5 +1016,60 @@ function statusClass(status: string) {
   height: 44px;
   padding: 0 24px;
   font-size: 14px;
+}
+
+.dark-form .el-radio-group.storage-toggle {
+  display: flex;
+  gap: 12px;
+}
+
+.dark-form .el-radio-group.storage-toggle .el-radio-button__inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px !important;
+  min-width: 120px;
+  justify-content: center;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(121, 167, 255, 0.2) !important;
+  background: rgba(2, 8, 21, 0.3) !important;
+  border-radius: 999px !important;
+  color: #c7e9ff !important;
+  font-weight: 700;
+}
+
+.dark-form .el-radio-group.storage-toggle .el-radio-button:not(.is-active) .el-radio-button__inner:hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .el-radio-button__inner {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.15)) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.18), 0 0 0 1px rgba(59, 130, 246, 0.35) !important;
+  --el-radio-button-checked-bg-color: transparent;
+  --el-radio-button-checked-border-color: #3b82f6;
+  --el-radio-button-checked-text-color: #fff;
+}
+
+.dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon {
+  color: #4ade80 !important;
+}
+.dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon svg {
+  stroke: #4ade80 !important;
+  fill: none !important;
+  filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
+}
+
+.dark-form .el-radio-group.storage-toggle .radio-icon {
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .radio-icon {
+  opacity: 1;
 }
 </style>
