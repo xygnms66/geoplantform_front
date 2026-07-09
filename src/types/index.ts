@@ -203,50 +203,6 @@ export type PipelineMiniCard = {
   href: string;
 };
 
-export type AefTabKey = "home" | "model" | "data" | "eval" | "explore" | "members";
-
-export type AefModel = {
-  id: string;
-  name: string;
-  icon: string;
-  status: "training" | "complete" | "planned";
-  desc: string;
-  inputs: string[];
-  process: string[];
-  outputs: string[];
-  features: string[];
-  tasks: { name: string; status: "active" | "done" | "planned"; owner: string }[];
-  members: string[];
-};
-
-export type AefDataset = {
-  id: string;
-  name: string;
-  icon: string;
-  status: "ready" | "syncing" | "planned";
-  tiles: string;
-  resolution: string;
-  modality: string;
-  desc: string;
-  pipeline: string[];
-  tags: string[];
-};
-
-export type AefEvalGroup = {
-  id: string;
-  icon: string;
-  name: string;
-  mode: "capability" | "scenario";
-  desc: string;
-  tasks: {
-    name: string;
-    model: string;
-    dataset: string;
-    status: "done" | "progress" | "planned";
-    score?: number;
-  }[];
-};
-
 export type AefNews = {
   id: string;
   category: "model" | "data" | "eval";
@@ -255,35 +211,5 @@ export type AefNews = {
   desc: string;
   date: string;
   tags: string[];
-};
-
-export type AefMember = {
-  id: string;
-  name: string;
-  role: string;
-  team: string;
-  focus: string[];
-  recent: string;
-  next: string;
-};
-
-export type AefWorkflowCard = {
-  id: string;
-  title: string;
-  category: "model" | "data" | "eval" | "ops";
-  owner: string;
-  due: string;
-  project: string;
-  summary: string;
-  priority: "high" | "medium" | "low";
-  tags: string[];
-};
-
-export type AefWorkflowColumn = {
-  id: string;
-  title: string;
-  hint: string;
-  accent: "slate" | "blue" | "amber" | "green";
-  items: AefWorkflowCard[];
 };
 

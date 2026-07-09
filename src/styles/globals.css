@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #08111f;
   --panel: rgba(15, 23, 42, 0.86);
   --panel-strong: #111c31;
@@ -648,9 +648,16 @@ h1 { margin: 8px 0 12px; font-size: clamp(34px, 5vw, 62px); line-height: 1.05; l
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 4px 0;
+  padding: 6px 8px;
+  margin: 0 -8px;
   cursor: pointer;
   text-decoration: none;
+  border-radius: 10px;
+  transition: background 0.2s;
+  position: relative;
+}
+.project-sidenav-dot-wrap:hover {
+  background: rgba(96,165,250,0.1);
 }
 .project-sidenav-dot {
   width: 14px;
@@ -658,27 +665,31 @@ h1 { margin: 8px 0 12px; font-size: clamp(34px, 5vw, 62px); line-height: 1.05; l
   border-radius: 50%;
   background: rgba(96,165,250,0.35);
   border: 2px solid rgba(96,165,250,0.45);
-  transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   flex-shrink: 0;
 }
 .project-sidenav-dot-wrap:hover .project-sidenav-dot {
-  background: rgba(96,165,250,0.7);
-  transform: scale(1.25);
+  background: rgba(96,165,250,0.85);
+  border-color: #60a5fa;
+  transform: scale(1.35);
+  box-shadow: 0 0 10px rgba(96,165,250,0.5);
 }
 .project-sidenav-dot-wrap.active .project-sidenav-dot {
   background: #3b82f6;
   border-color: #60a5fa;
-  box-shadow: 0 0 0 4px rgba(59,130,246,0.22);
-  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.3), 0 0 12px rgba(59,130,246,0.4);
+  transform: scale(1.2);
 }
 .project-sidenav-slug {
   display: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #93c5fd;
   letter-spacing: 0.04em;
   white-space: nowrap;
+  transition: opacity 0.2s;
 }
+.project-sidenav-dot-wrap:hover .project-sidenav-slug,
 .project-sidenav-dot-wrap.active .project-sidenav-slug {
   display: block;
 }
@@ -702,3 +713,4 @@ h1 { margin: 8px 0 12px; font-size: clamp(34px, 5vw, 62px); line-height: 1.05; l
   .stat-grid, .kv { grid-template-columns: 1fr; }
   .hero-card { padding: 24px; }
 }
+
