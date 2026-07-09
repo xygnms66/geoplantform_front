@@ -75,3 +75,19 @@ export function removeToken() {
     localStorage.removeItem("auth_token");
   }
 }
+
+export async function changePassword(token: string, oldPassword: string, newPassword: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "修改密码失败" }));
+    throw new Error(error.detail || "修改密码失败");
+  }
+}
