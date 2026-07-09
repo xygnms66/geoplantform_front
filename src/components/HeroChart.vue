@@ -74,5 +74,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="chartRef" style="width: 100%; height: 160px; margin-top: 12px" />
+  <div ref="chartRef" style="width: 100%; height: 200px; margin-top: 12px" />
 </template>

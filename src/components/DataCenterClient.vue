@@ -91,8 +91,9 @@ function clearFilters() {
 .dc-count-line strong { color: var(--brand); }
 .dc-clear-button, .dc-active-filter-row button, .dc-empty-state button { border: 1px solid rgba(96, 165, 250, 0.25); background: rgba(96, 165, 250, 0.08); color: #93c5fd; border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 13px; }
 .dc-active-filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; }
-.dc-dataset-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.dc-dataset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .dc-empty-state { margin-top: 18px; padding: 34px; border: 1px dashed rgba(96, 165, 250, 0.2); background: rgba(96, 165, 250, 0.04); border-radius: 16px; text-align: center; color: var(--text); }
 .dc-empty-state p { color: var(--muted); margin: 10px 0 18px; }
-@media (max-width: 1100px) { .dc-hero-row { grid-template-columns: 1fr; } .dc-dataset-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .dc-hero-row { grid-template-columns: 1fr; } .dc-dataset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .dc-dataset-grid { grid-template-columns: 1fr; } }
 </style>

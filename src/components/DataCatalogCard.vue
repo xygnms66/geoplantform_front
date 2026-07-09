@@ -67,20 +67,20 @@ function handleDriveClick() {
 </template>
 
 <style scoped>
-.dc-card { padding: 18px; border-radius: 20px; background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74)); border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22); transition: border-color 0.18s, transform 0.18s; }
+.dc-card { padding: 14px; border-radius: 16px; background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74)); border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22); transition: border-color 0.18s, transform 0.18s; }
 .dc-card:hover { transform: translateY(-2px); border-color: rgba(96, 165, 250, 0.35); }
 .dc-card-header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-.dc-card-header h3 { margin: 0; font-size: 15px; line-height: 1.4; color: var(--text); }
+.dc-card-header h3 { margin: 0; font-size: 13px; line-height: 1.35; color: var(--text); }
 .dc-star { flex-shrink: 0; font-size: 13px; color: var(--muted); }
-.dc-card-body { display: grid; grid-template-columns: 60px 1fr; gap: 14px; margin-top: 12px; }
-.dc-dataset-icon { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 16px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(129, 140, 248, 0.18)); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 28px; }
+.dc-card-body { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-top: 10px; }
+.dc-dataset-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(129, 140, 248, 0.18)); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 22px; }
 .dc-dataset-info { min-width: 0; }
-.dc-meta-line { display: flex; gap: 14px; color: var(--subtle); font-size: 12px; }
+.dc-meta-line { display: flex; gap: 10px; color: var(--subtle); font-size: 11px; }
 .dc-tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
 .dc-tag-row span { padding: 2px 8px; border-radius: 999px; background: rgba(96, 165, 250, 0.1); color: #bfdbfe; border: 1px solid rgba(96, 165, 250, 0.18); font-size: 11px; }
 .dc-spatial-temporal-info { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; color: var(--subtle); font-size: 12px; }
-.dc-dataset-info p { margin: 9px 0 0; color: var(--muted); font-size: 13px; line-height: 1.65; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.dc-card-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; }
+.dc-dataset-info p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dc-card-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12px; }
 .dc-source-name { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
 .dc-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--green); }
 .dc-status-group { display: inline-flex; align-items: center; gap: 10px; }
