@@ -34,7 +34,13 @@ async function initChart() {
       axisTick: { show: false },
       axisLabel: { color: "rgba(229,238,252,0.75)", fontSize: 12, fontWeight: "bold", margin: 10 },
     },
-    yAxis: { type: "value", splitLine: { show: false }, axisLabel: { show: false }, axisLine: { show: false }, axisTick: { show: false } },
+    yAxis: {
+      type: "value",
+      splitLine: { show: false },
+      axisLabel: { show: false },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     series: [
       {
         type: "bar",
@@ -53,14 +59,24 @@ async function initChart() {
             borderRadius: [10, 10, 2, 2],
           },
         })),
-        label: { show: true, position: "top", color: "#eff6ff", fontSize: 24, fontWeight: "bold", fontFamily: "Arial, sans-serif", offset: [0, 6] },
+        label: {
+          show: true,
+          position: "top",
+          color: "#eff6ff",
+          fontSize: 24,
+          fontWeight: "bold",
+          fontFamily: "Arial, sans-serif",
+          offset: [0, 6],
+        },
         animationDelay: (idx: number) => idx * 180,
       },
     ],
   });
 }
 
-function onResize() { chart?.resize(); }
+function onResize() {
+  chart?.resize();
+}
 
 onMounted(() => {
   initChart();

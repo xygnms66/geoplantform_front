@@ -20,6 +20,11 @@ onMounted(async () => {
     <p>用于展示论文、报告、Demo、模型方案、数据集说明、可视化结果和阶段性平台成果。</p>
   </section>
   <section class="section grid-4">
-    <AchievementCard v-for="item in achievements" :key="item.id" :item="item" :project="projects.find((p) => p.id === item.project_id)" />
+    <AchievementCard
+      v-for="item in achievements"
+      :key="item.id"
+      :item="item"
+      :project="projects.find((p) => p.id === item.project_id)"
+    />
   </section>
 </template>

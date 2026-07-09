@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElDatePicker, ElRadioGroup, ElRadioButton, ElCheckbox, ElTag, ElText } from "element-plus";
+import {
+  ElRow,
+  ElCol,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElDatePicker,
+  ElRadioGroup,
+  ElRadioButton,
+  ElCheckbox,
+  ElTag,
+  ElText,
+} from "element-plus";
 import {
   dataAssets,
   dataInbox,
@@ -16,7 +30,18 @@ import {
 const taskModalOpen = ref(false);
 
 const licenseOptions = ["Internal", "Public", "Restricted"];
-const formatOptions = ["GeoTIFF", "COG", "TIFF / TIF", "GRIB", "Shapefile / SHP", "GeoJSON", "CSV", "Parquet", "GeoParquet", "JSON / JSONL"];
+const formatOptions = [
+  "GeoTIFF",
+  "COG",
+  "TIFF / TIF",
+  "GRIB",
+  "Shapefile / SHP",
+  "GeoJSON",
+  "CSV",
+  "Parquet",
+  "GeoParquet",
+  "JSON / JSONL",
+];
 const domainOptions = ["预训练", "变化检测", "目标检测", "热风险", "全景分割"];
 const modalityOptions = ["光学", "多光谱", "SAR", "DEM", "LST", "土地覆盖", "矢量"];
 const resolutionUnitOptions = ["m/pixel", "cm/pixel", "km/pixel"];
@@ -70,9 +95,7 @@ function statusClass(status: string) {
     <section class="page-title-row">
       <div>
         <div class="title-box">数据中心</div>
-        <div class="page-subtitle">
-          统一管理遥感数据资产、对象存储、入库审核和数据处理状态。
-        </div>
+        <div class="page-subtitle">统一管理遥感数据资产、对象存储、入库审核和数据处理状态。</div>
       </div>
       <div class="action-row">
         <button class="primary-btn" @click="taskModalOpen = true">+ 注册数据集</button>
@@ -111,15 +134,21 @@ function statusClass(status: string) {
           </div>
           <div class="filter-group">
             <div class="filter-title">应用范围</div>
-            <button v-for="scope in dataScopes" :key="scope" type="button" class="filter-chip small">{{ scope }}</button>
+            <button v-for="scope in dataScopes" :key="scope" type="button" class="filter-chip small">
+              {{ scope }}
+            </button>
           </div>
           <div class="filter-group">
             <div class="filter-title">模态</div>
-            <button v-for="modality in dataModalities" :key="modality" type="button" class="filter-chip small">{{ modality }}</button>
+            <button v-for="modality in dataModalities" :key="modality" type="button" class="filter-chip small">
+              {{ modality }}
+            </button>
           </div>
           <div class="filter-group">
             <div class="filter-title">状态</div>
-            <button v-for="status in dataStatuses" :key="status" type="button" class="filter-chip small">{{ status }}</button>
+            <button v-for="status in dataStatuses" :key="status" type="button" class="filter-chip small">
+              {{ status }}
+            </button>
           </div>
         </div>
       </aside>
@@ -161,10 +190,18 @@ function statusClass(status: string) {
                 <p class="asset-desc">{{ asset.desc }}</p>
 
                 <div class="meta-grid">
-                  <div><span>空间范围</span><b>{{ asset.region }}</b></div>
-                  <div><span>时间范围</span><b>{{ asset.time }}</b></div>
-                  <div><span>分辨率</span><b>{{ asset.resolution }}</b></div>
-                  <div><span>Owner</span><b>{{ asset.owner }}</b></div>
+                  <div>
+                    <span>空间范围</span><b>{{ asset.region }}</b>
+                  </div>
+                  <div>
+                    <span>时间范围</span><b>{{ asset.time }}</b>
+                  </div>
+                  <div>
+                    <span>分辨率</span><b>{{ asset.resolution }}</b>
+                  </div>
+                  <div>
+                    <span>Owner</span><b>{{ asset.owner }}</b>
+                  </div>
                 </div>
 
                 <div class="tag-line">
@@ -196,7 +233,8 @@ function statusClass(status: string) {
               </div>
               <div class="storage-table">
                 <div class="storage-row table-head">
-                  <span>名称</span><span>类型</span><span>容量</span><span>状态</span><span>Endpoint</span><span>操作</span>
+                  <span>名称</span><span>类型</span><span>容量</span><span>状态</span><span>Endpoint</span
+                  ><span>操作</span>
                 </div>
                 <div v-for="store in dataStores" :key="store.name" class="storage-row">
                   <span class="store-name">{{ store.name }}</span>
@@ -280,12 +318,26 @@ function statusClass(status: string) {
             <el-row :gutter="16">
               <el-col :span="12">
                 <el-form-item label="开始时间">
-                  <el-date-picker v-model="form.begin_time" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width:100%" popper-class="dark-popper" />
+                  <el-date-picker
+                    v-model="form.begin_time"
+                    type="date"
+                    placeholder="选择日期"
+                    value-format="YYYY-MM-DD"
+                    style="width: 100%"
+                    popper-class="dark-popper"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="结束时间">
-                  <el-date-picker v-model="form.end_time" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width:100%" popper-class="dark-popper" />
+                  <el-date-picker
+                    v-model="form.end_time"
+                    type="date"
+                    placeholder="选择日期"
+                    value-format="YYYY-MM-DD"
+                    style="width: 100%"
+                    popper-class="dark-popper"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -293,9 +345,13 @@ function statusClass(status: string) {
             <el-row :gutter="16">
               <el-col :span="8">
                 <el-form-item label="分辨率">
-                  <div style="display:flex;gap:0;width:100%">
-                    <el-input v-model="form.resolution" placeholder="数值" style="flex:1;border-top-right-radius:0;border-bottom-right-radius:0" />
-                    <el-select v-model="form.resolution_unit" style="width:110px" popper-class="dark-popper">
+                  <div style="display: flex; gap: 0; width: 100%">
+                    <el-input
+                      v-model="form.resolution"
+                      placeholder="数值"
+                      style="flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0"
+                    />
+                    <el-select v-model="form.resolution_unit" style="width: 110px" popper-class="dark-popper">
                       <el-option v-for="u in resolutionUnitOptions" :key="u" :label="u" :value="u" />
                     </el-select>
                   </div>
@@ -314,7 +370,7 @@ function statusClass(status: string) {
                     placeholder="请选择或输入许可"
                     collapse-tags
                     collapse-tags-tooltip
-                    style="width:100%"
+                    style="width: 100%"
                     popper-class="dark-popper"
                   >
                     <el-option v-for="opt in licenseOptions" :key="opt" :label="opt" :value="opt" />
@@ -334,7 +390,7 @@ function statusClass(status: string) {
                     placeholder="请选择或输入格式"
                     collapse-tags
                     collapse-tags-tooltip
-                    style="width:100%"
+                    style="width: 100%"
                     popper-class="dark-popper"
                   >
                     <el-option v-for="opt in formatOptions" :key="opt" :label="opt" :value="opt" />
@@ -355,7 +411,7 @@ function statusClass(status: string) {
                 collapse-tags
                 collapse-tags-tooltip
                 :max-collapse-tags="5"
-                style="width:100%"
+                style="width: 100%"
                 popper-class="dark-popper"
                 clearable
               >
@@ -371,7 +427,7 @@ function statusClass(status: string) {
                 default-first-option
                 :reserve-keyword="false"
                 placeholder="请选择模态"
-                style="width:100%"
+                style="width: 100%"
                 popper-class="dark-popper"
                 clearable
               >
@@ -382,18 +438,50 @@ function statusClass(status: string) {
             <el-form-item label="存储状态">
               <el-radio-group v-model="form.storage_status" class="storage-toggle">
                 <el-radio-button value="local">
-                  <svg class="radio-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <svg
+                    class="radio-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                  </svg>
                   本地存储
                 </el-radio-button>
                 <el-radio-button value="web">
-                  <svg class="radio-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <svg
+                    class="radio-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                    />
+                  </svg>
                   网站链接
                 </el-radio-button>
               </el-radio-group>
             </el-form-item>
 
             <el-form-item v-if="form.storage_status" :label="form.storage_status === 'local' ? '存储路径' : '网站地址'">
-              <el-input v-model="form.storage_path" :placeholder="form.storage_status === 'local' ? '/mnt_llm_A100_V1/datasets/...' : 'https://...'" clearable />
+              <el-input
+                v-model="form.storage_path"
+                :placeholder="form.storage_status === 'local' ? '/mnt_llm_A100_V1/datasets/...' : 'https://...'"
+                clearable
+              />
             </el-form-item>
           </el-form>
         </div>
@@ -1049,7 +1137,9 @@ function statusClass(status: string) {
 .dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .el-radio-button__inner {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.15)) !important;
   border-color: #3b82f6 !important;
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.18), 0 0 0 1px rgba(59, 130, 246, 0.35) !important;
+  box-shadow:
+    0 0 24px rgba(59, 130, 246, 0.18),
+    0 0 0 1px rgba(59, 130, 246, 0.35) !important;
   --el-radio-button-checked-bg-color: transparent;
   --el-radio-button-checked-border-color: #3b82f6;
   --el-radio-button-checked-text-color: #fff;

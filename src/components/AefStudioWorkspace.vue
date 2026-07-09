@@ -128,7 +128,9 @@ const activeSectionMeta = computed(
 .nav-item.active {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.08));
   border-color: rgba(96, 165, 250, 0.4);
-  box-shadow: inset 3px 0 0 #3b82f6, 0 8px 24px rgba(37, 99, 235, 0.12);
+  box-shadow:
+    inset 3px 0 0 #3b82f6,
+    0 8px 24px rgba(37, 99, 235, 0.12);
 }
 
 .nav-icon {

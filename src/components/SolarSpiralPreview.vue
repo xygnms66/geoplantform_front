@@ -39,24 +39,48 @@ onMounted(async () => {
   }
   const starsGeometry = new THREE.BufferGeometry();
   starsGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
-  const stars = new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: "#dbeafe", size: 0.05, transparent: true, opacity: 0.9, sizeAttenuation: true }));
+  const stars = new THREE.Points(
+    starsGeometry,
+    new THREE.PointsMaterial({ color: "#dbeafe", size: 0.05, transparent: true, opacity: 0.9, sizeAttenuation: true }),
+  );
   scene.add(stars);
 
   const sun = new THREE.Mesh(new THREE.SphereGeometry(0.72, 40, 40), new THREE.MeshBasicMaterial({ color: "#fde68a" }));
   sun.position.set(-1.9, 0.55, -0.6);
   scene.add(sun);
-  const sunGlow = new THREE.Mesh(new THREE.SphereGeometry(1.06, 32, 32), new THREE.MeshBasicMaterial({ color: "#fb923c", transparent: true, opacity: 0.18, side: THREE.BackSide }));
+  const sunGlow = new THREE.Mesh(
+    new THREE.SphereGeometry(1.06, 32, 32),
+    new THREE.MeshBasicMaterial({ color: "#fb923c", transparent: true, opacity: 0.18, side: THREE.BackSide }),
+  );
   sun.add(sunGlow);
 
   const earthGroup = new THREE.Group();
   earthGroup.position.set(1.2, -0.15, 0);
-  const earth = new THREE.Mesh(new THREE.SphereGeometry(1.16, 56, 56), new THREE.MeshStandardMaterial({ color: "#1d4ed8", emissive: "#0a225d", emissiveIntensity: 0.75, roughness: 0.72, metalness: 0.08 }));
-  const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.3, 56, 56), new THREE.MeshBasicMaterial({ color: "#67e8f9", transparent: true, opacity: 0.14, side: THREE.BackSide }));
-  const latLines = new THREE.Mesh(new THREE.SphereGeometry(1.22, 18, 18), new THREE.MeshBasicMaterial({ color: "#93c5fd", wireframe: true, transparent: true, opacity: 0.12 }));
+  const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(1.16, 56, 56),
+    new THREE.MeshStandardMaterial({
+      color: "#1d4ed8",
+      emissive: "#0a225d",
+      emissiveIntensity: 0.75,
+      roughness: 0.72,
+      metalness: 0.08,
+    }),
+  );
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1.3, 56, 56),
+    new THREE.MeshBasicMaterial({ color: "#67e8f9", transparent: true, opacity: 0.14, side: THREE.BackSide }),
+  );
+  const latLines = new THREE.Mesh(
+    new THREE.SphereGeometry(1.22, 18, 18),
+    new THREE.MeshBasicMaterial({ color: "#93c5fd", wireframe: true, transparent: true, opacity: 0.12 }),
+  );
   earthGroup.add(earth, atmosphere, latLines);
   scene.add(earthGroup);
 
-  const orbitRing = new THREE.Mesh(new THREE.TorusGeometry(2.05, 0.01, 8, 180), new THREE.MeshBasicMaterial({ color: "#38bdf8", transparent: true, opacity: 0.16 }));
+  const orbitRing = new THREE.Mesh(
+    new THREE.TorusGeometry(2.05, 0.01, 8, 180),
+    new THREE.MeshBasicMaterial({ color: "#38bdf8", transparent: true, opacity: 0.16 }),
+  );
   orbitRing.rotation.x = Math.PI / 2.7;
   orbitRing.rotation.y = Math.PI / 4.2;
   earthGroup.add(orbitRing);
@@ -65,13 +89,23 @@ onMounted(async () => {
   satellitePivot.rotation.x = THREE.MathUtils.degToRad(28);
   satellitePivot.rotation.z = THREE.MathUtils.degToRad(-18);
   const satellite = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.26), new THREE.MeshStandardMaterial({ color: "#f8fafc", metalness: 0.62, roughness: 0.34 }));
-  const panelMaterial = new THREE.MeshStandardMaterial({ color: "#60a5fa", emissive: "#2563eb", emissiveIntensity: 0.35 });
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.18, 0.18, 0.26),
+    new THREE.MeshStandardMaterial({ color: "#f8fafc", metalness: 0.62, roughness: 0.34 }),
+  );
+  const panelMaterial = new THREE.MeshStandardMaterial({
+    color: "#60a5fa",
+    emissive: "#2563eb",
+    emissiveIntensity: 0.35,
+  });
   const leftPanel = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.03, 0.18), panelMaterial);
   leftPanel.position.x = -0.34;
   const rightPanel = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.03, 0.18), panelMaterial);
   rightPanel.position.x = 0.34;
-  const antenna = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 16), new THREE.MeshStandardMaterial({ color: "#e0f2fe", emissive: "#67e8f9", emissiveIntensity: 0.2 }));
+  const antenna = new THREE.Mesh(
+    new THREE.ConeGeometry(0.04, 0.12, 16),
+    new THREE.MeshStandardMaterial({ color: "#e0f2fe", emissive: "#67e8f9", emissiveIntensity: 0.2 }),
+  );
   antenna.position.z = 0.18;
   antenna.rotation.x = Math.PI / 2;
   satellite.add(body, leftPanel, rightPanel, antenna);
@@ -154,7 +188,9 @@ onUnmounted(() => {
   min-height: 260px;
   border-radius: 24px;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  background: radial-gradient(circle at 18% 18%, rgba(96, 165, 250, 0.14), transparent 24%), linear-gradient(180deg, rgba(4, 11, 25, 0.94), rgba(8, 18, 34, 0.78));
+  background:
+    radial-gradient(circle at 18% 18%, rgba(96, 165, 250, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(4, 11, 25, 0.94), rgba(8, 18, 34, 0.78));
 }
 .solar-spiral-canvas {
   position: absolute;
@@ -168,7 +204,9 @@ onUnmounted(() => {
 .solar-spiral-veil {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 68% 42%, rgba(37, 99, 235, 0.16), transparent 20%), linear-gradient(180deg, rgba(2, 6, 23, 0.04), rgba(2, 6, 23, 0.42));
+  background:
+    radial-gradient(circle at 68% 42%, rgba(37, 99, 235, 0.16), transparent 20%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.04), rgba(2, 6, 23, 0.42));
   pointer-events: none;
 }
 .solar-spiral-hud {
@@ -224,9 +262,20 @@ onUnmounted(() => {
   font-size: 14px;
 }
 @media (max-width: 560px) {
-  .solar-spiral-shell { min-height: 230px; }
-  .solar-spiral-hud { max-width: none; padding: 20px 18px 0; }
-  .solar-spiral-hud strong { font-size: 22px; }
-  .solar-spiral-readout { left: 18px; right: 18px; min-width: 0; }
+  .solar-spiral-shell {
+    min-height: 230px;
+  }
+  .solar-spiral-hud {
+    max-width: none;
+    padding: 20px 18px 0;
+  }
+  .solar-spiral-hud strong {
+    font-size: 22px;
+  }
+  .solar-spiral-readout {
+    left: 18px;
+    right: 18px;
+    min-width: 0;
+  }
 }
 </style>

@@ -1,6 +1,20 @@
 ﻿<script setup lang="ts">
 import { ref } from "vue";
-import { ElRow, ElCol, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElDatePicker, ElRadioGroup, ElRadioButton, ElCheckbox, ElTag, ElText } from "element-plus";
+import {
+  ElRow,
+  ElCol,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElDatePicker,
+  ElRadioGroup,
+  ElRadioButton,
+  ElCheckbox,
+  ElTag,
+  ElText,
+} from "element-plus";
 import {
   dashboardAgentActions,
   dashboardDatasets,
@@ -15,7 +29,18 @@ const agentOpen = ref(false);
 const taskModalOpen = ref(false);
 
 const licenseOptions = ["Internal", "Public", "Restricted"];
-const formatOptions = ["GeoTIFF", "COG", "TIFF / TIF", "GRIB", "Shapefile / SHP", "GeoJSON", "CSV", "Parquet", "GeoParquet", "JSON / JSONL"];
+const formatOptions = [
+  "GeoTIFF",
+  "COG",
+  "TIFF / TIF",
+  "GRIB",
+  "Shapefile / SHP",
+  "GeoJSON",
+  "CSV",
+  "Parquet",
+  "GeoParquet",
+  "JSON / JSONL",
+];
 const domainOptions = ["预训练", "变化检测", "目标检测", "热风险", "全景分割"];
 const modalityOptions = ["光学", "多光谱", "SAR", "DEM", "LST", "土地覆盖", "矢量"];
 const resolutionUnitOptions = ["m/pixel", "cm/pixel", "km/pixel"];
@@ -136,7 +161,9 @@ function statusClass(status: string) {
                   <span>异常 {{ project.errors }}</span>
                 </div>
                 <div class="progress-line">
-                  <div class="progress-track"><div class="progress-fill" :style="{ width: `${project.progress}%` }"></div></div>
+                  <div class="progress-track">
+                    <div class="progress-fill" :style="{ width: `${project.progress}%` }"></div>
+                  </div>
                   <b>{{ project.progress }}%</b>
                 </div>
               </article>
@@ -159,7 +186,9 @@ function statusClass(status: string) {
                 <div class="dataset-icon">DS</div>
                 <div class="dataset-main">
                   <div class="dataset-title">{{ dataset.name }}</div>
-                  <div class="dataset-meta">{{ dataset.source }} / {{ dataset.modality }} / {{ dataset.resolution }} / {{ dataset.region }}</div>
+                  <div class="dataset-meta">
+                    {{ dataset.source }} / {{ dataset.modality }} / {{ dataset.resolution }} / {{ dataset.region }}
+                  </div>
                   <div class="tag-line">
                     <span class="tag">{{ dataset.time }}</span>
                     <span class="tag">{{ dataset.format }}</span>
@@ -245,7 +274,9 @@ function statusClass(status: string) {
           <div v-for="pipe in dashboardPipelines" :key="pipe.name" class="pipeline-row">
             <span class="pipe-name">{{ pipe.name }}</span>
             <span>{{ pipe.project }}</span>
-            <span><i class="status-pill" :class="statusClass(pipe.status)">{{ pipe.status }}</i></span>
+            <span
+              ><i class="status-pill" :class="statusClass(pipe.status)">{{ pipe.status }}</i></span
+            >
             <span>{{ pipe.lastRun }}</span>
             <span>{{ pipe.duration }}</span>
             <span>{{ pipe.owner }}</span>
@@ -324,12 +355,26 @@ function statusClass(status: string) {
             <el-row :gutter="16">
               <el-col :span="12">
                 <el-form-item label="开始时间">
-                  <el-date-picker v-model="form.begin_time" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width:100%" popper-class="dark-popper" />
+                  <el-date-picker
+                    v-model="form.begin_time"
+                    type="date"
+                    placeholder="选择日期"
+                    value-format="YYYY-MM-DD"
+                    style="width: 100%"
+                    popper-class="dark-popper"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="结束时间">
-                  <el-date-picker v-model="form.end_time" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width:100%" popper-class="dark-popper" />
+                  <el-date-picker
+                    v-model="form.end_time"
+                    type="date"
+                    placeholder="选择日期"
+                    value-format="YYYY-MM-DD"
+                    style="width: 100%"
+                    popper-class="dark-popper"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -337,9 +382,13 @@ function statusClass(status: string) {
             <el-row :gutter="16">
               <el-col :span="8">
                 <el-form-item label="分辨率">
-                  <div style="display:flex;gap:0;width:100%">
-                    <el-input v-model="form.resolution" placeholder="数值" style="flex:1;border-top-right-radius:0;border-bottom-right-radius:0" />
-                    <el-select v-model="form.resolution_unit" style="width:110px" popper-class="dark-popper">
+                  <div style="display: flex; gap: 0; width: 100%">
+                    <el-input
+                      v-model="form.resolution"
+                      placeholder="数值"
+                      style="flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0"
+                    />
+                    <el-select v-model="form.resolution_unit" style="width: 110px" popper-class="dark-popper">
                       <el-option v-for="u in resolutionUnitOptions" :key="u" :label="u" :value="u" />
                     </el-select>
                   </div>
@@ -358,7 +407,7 @@ function statusClass(status: string) {
                     placeholder="请选择或输入许可"
                     collapse-tags
                     collapse-tags-tooltip
-                    style="width:100%"
+                    style="width: 100%"
                     popper-class="dark-popper"
                   >
                     <el-option v-for="opt in licenseOptions" :key="opt" :label="opt" :value="opt" />
@@ -378,7 +427,7 @@ function statusClass(status: string) {
                     placeholder="请选择或输入格式"
                     collapse-tags
                     collapse-tags-tooltip
-                    style="width:100%"
+                    style="width: 100%"
                     popper-class="dark-popper"
                   >
                     <el-option v-for="opt in formatOptions" :key="opt" :label="opt" :value="opt" />
@@ -399,7 +448,7 @@ function statusClass(status: string) {
                 collapse-tags
                 collapse-tags-tooltip
                 :max-collapse-tags="5"
-                style="width:100%"
+                style="width: 100%"
                 popper-class="dark-popper"
                 clearable
               >
@@ -415,7 +464,7 @@ function statusClass(status: string) {
                 default-first-option
                 :reserve-keyword="false"
                 placeholder="请选择模态"
-                style="width:100%"
+                style="width: 100%"
                 popper-class="dark-popper"
                 clearable
               >
@@ -426,18 +475,50 @@ function statusClass(status: string) {
             <el-form-item label="存储状态">
               <el-radio-group v-model="form.storage_status" class="storage-toggle">
                 <el-radio-button value="local">
-                  <svg class="radio-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <svg
+                    class="radio-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                  </svg>
                   本地存储
                 </el-radio-button>
                 <el-radio-button value="web">
-                  <svg class="radio-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <svg
+                    class="radio-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                    />
+                  </svg>
                   网站链接
                 </el-radio-button>
               </el-radio-group>
             </el-form-item>
 
             <el-form-item v-if="form.storage_status" :label="form.storage_status === 'local' ? '存储路径' : '网站地址'">
-              <el-input v-model="form.storage_path" :placeholder="form.storage_status === 'local' ? '/mnt_llm_A100_V1/datasets/...' : 'https://...'" clearable />
+              <el-input
+                v-model="form.storage_path"
+                :placeholder="form.storage_status === 'local' ? '/mnt_llm_A100_V1/datasets/...' : 'https://...'"
+                clearable
+              />
             </el-form-item>
           </el-form>
         </div>
@@ -1362,7 +1443,9 @@ function statusClass(status: string) {
 .dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .el-radio-button__inner {
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.15)) !important;
   border-color: #3b82f6 !important;
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.18), 0 0 0 1px rgba(59, 130, 246, 0.35) !important;
+  box-shadow:
+    0 0 24px rgba(59, 130, 246, 0.18),
+    0 0 0 1px rgba(59, 130, 246, 0.35) !important;
 }
 
 .dark-form .el-radio-group.storage-toggle .radio-icon {
@@ -1535,7 +1618,4 @@ function statusClass(status: string) {
 .dark-popper .el-date-picker__next-btn:hover {
   color: #f8fbff !important;
 }
-
-
-
 </style>

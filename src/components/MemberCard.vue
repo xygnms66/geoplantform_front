@@ -17,7 +17,8 @@ const props = defineProps<{
   fallbackProjects?: string[];
 }>();
 
-const projects = props.member.projects && props.member.projects.length > 0 ? props.member.projects : (props.fallbackProjects ?? []);
+const projects =
+  props.member.projects && props.member.projects.length > 0 ? props.member.projects : (props.fallbackProjects ?? []);
 const direction = props.member.researchDirection || props.member.direction || "待补充研究方向";
 const recentWork = props.member.recentWork || props.member.plan || "待补充近期工作目标 / 计划";
 </script>

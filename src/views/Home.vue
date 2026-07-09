@@ -3,7 +3,13 @@ import { ref, onMounted } from "vue";
 import { getAchievements, getDashboard, getPersonalMembers, getProjects, getTeamGroups } from "@/lib/api";
 import { getDataCatalogCards } from "@/lib/dataCenterApi";
 import type { Achievement, DashboardSummary, PersonalMember, Project, TeamGroup, DataCatalogCard } from "@/types";
-import { achievements as achievementFallback, dashboardFallback, personalMembers, projects as projectFallback, teamGroups as teamGroupFallback } from "@/lib/staticData";
+import {
+  achievements as achievementFallback,
+  dashboardFallback,
+  personalMembers,
+  projects as projectFallback,
+  teamGroups as teamGroupFallback,
+} from "@/lib/staticData";
 import { dataCatalogCards as dataCatalogFallback } from "@/lib/dataCenterStaticData";
 import ProjectCard from "@/components/ProjectCard.vue";
 import HeroChart from "@/components/HeroChart.vue";
@@ -20,7 +26,12 @@ const dataCatalogCards = ref<DataCatalogCard[]>(dataCatalogFallback);
 
 onMounted(async () => {
   const [d, m, tg, a, p, dc] = await Promise.all([
-    getDashboard(), getPersonalMembers(), getTeamGroups(), getAchievements(), getProjects(), getDataCatalogCards(),
+    getDashboard(),
+    getPersonalMembers(),
+    getTeamGroups(),
+    getAchievements(),
+    getProjects(),
+    getDataCatalogCards(),
   ]);
   dashboard.value = d;
   members.value = m;
@@ -36,7 +47,9 @@ onMounted(async () => {
     <div class="hero-card">
       <div class="eyebrow">GeoRemote Research Asset Platform</div>
       <h1>天地一体遥感智能模型平台</h1>
-      <p>面向自然资源监测、城市精细治理、生态环境感知等关键场景，统一组织多源遥感数据、模型资产与评测能力，形成从数据获取、表征学习、语义理解到决策赋能的协同式研发底座。</p>
+      <p>
+        面向自然资源监测、城市精细治理、生态环境感知等关键场景，统一组织多源遥感数据、模型资产与评测能力，形成从数据获取、表征学习、语义理解到决策赋能的协同式研发底座。
+      </p>
       <HeroChart
         :projectCount="dashboard.project_count"
         :memberCount="dashboard.member_count"
@@ -77,7 +90,9 @@ onMounted(async () => {
     <div class="section-head">
       <div>
         <h2>团队总览</h2>
-        <p class="lead">团队围绕模型、数据、评测与应用协同推进，每个小组各自承担清晰职责，又能在统一平台里共享资产与成果。</p>
+        <p class="lead">
+          团队围绕模型、数据、评测与应用协同推进，每个小组各自承担清晰职责，又能在统一平台里共享资产与成果。
+        </p>
       </div>
       <router-link class="button" to="/team">全部成员</router-link>
     </div>
@@ -110,7 +125,12 @@ onMounted(async () => {
       <router-link class="button" to="/achievements">全部成果</router-link>
     </div>
     <div class="grid-4">
-      <AchievementCard v-for="item in achievements.slice(0, 4)" :key="item.id" :item="item" :project="projects.find((p) => p.id === item.project_id)" />
+      <AchievementCard
+        v-for="item in achievements.slice(0, 4)"
+        :key="item.id"
+        :item="item"
+        :project="projects.find((p) => p.id === item.project_id)"
+      />
     </div>
   </section>
   <div class="footer-note">Geo Remote Basic Framework & Static Showcase</div>

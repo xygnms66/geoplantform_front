@@ -17,7 +17,7 @@ const publicNavItems = [
 
 const authNavItems = [{ href: "/aef", label: "工作台" }];
 
-const allItems = () => auth.user ? [...publicNavItems, ...authNavItems] : publicNavItems;
+const allItems = () => (auth.user ? [...publicNavItems, ...authNavItems] : publicNavItems);
 
 const animTimers = ref<Map<string, number>>(new Map());
 

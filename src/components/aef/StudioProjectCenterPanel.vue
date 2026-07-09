@@ -154,9 +154,17 @@ function workflowAccentClass(accent: string) {
               </div>
             </div>
             <div class="project-health">
-              <div class="health-card"><b>{{ currentProject.progress }}%</b><span>总体进度</span></div>
-              <div class="health-card"><b>{{ currentProject.done }}/{{ currentProject.total }}</b><span>任务完成</span></div>
-              <div class="health-card"><b>{{ currentProject.risk }}</b><span>风险等级</span></div>
+              <div class="health-card">
+                <b>{{ currentProject.progress }}%</b><span>总体进度</span>
+              </div>
+              <div class="health-card">
+                <b>{{ currentProject.done }}/{{ currentProject.total }}</b
+                ><span>任务完成</span>
+              </div>
+              <div class="health-card">
+                <b>{{ currentProject.risk }}</b
+                ><span>风险等级</span>
+              </div>
             </div>
           </div>
         </section>
@@ -172,7 +180,9 @@ function workflowAccentClass(accent: string) {
                 <span class="status-pill" :class="statusClass(cycle.status)">{{ cycle.status }}</span>
               </div>
               <div class="cycle-progress">
-                <div class="progress-track"><div class="progress-fill" :style="{ width: `${cycle.progress}%` }"></div></div>
+                <div class="progress-track">
+                  <div class="progress-fill" :style="{ width: `${cycle.progress}%` }"></div>
+                </div>
                 <b>{{ cycle.progress }}%</b>
               </div>
               <div class="cycle-meta">{{ cycle.done }}/{{ cycle.total }} tasks / {{ cycle.focus }}</div>
@@ -249,7 +259,9 @@ function workflowAccentClass(accent: string) {
                   <article v-for="item in column.items" :key="item.id" class="workflow-card">
                     <div class="workflow-card-top">
                       <span class="pill pill-blue">{{ workflowCategoryText(item.category) }}</span>
-                      <span class="pill" :class="workflowPriorityClass(item.priority)">{{ workflowPriorityText(item.priority) }}</span>
+                      <span class="pill" :class="workflowPriorityClass(item.priority)">{{
+                        workflowPriorityText(item.priority)
+                      }}</span>
                     </div>
                     <div class="workflow-project">{{ item.project }}</div>
                     <h3 class="workflow-card-title">{{ item.title }}</h3>
