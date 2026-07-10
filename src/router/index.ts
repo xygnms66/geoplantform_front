@@ -13,7 +13,7 @@ const router = createRouter({
     { path: "/achievements", name: "achievements", component: () => import("@/views/Achievements.vue") },
     { path: "/data", name: "data", component: () => import("@/views/DataCenter.vue") },
     { path: "/admin/datasets", name: "admin-datasets", component: () => import("@/views/AdminDatasets.vue") },
-    { path: "/information", name: "information", component: () => import("@/views/Information.vue") },
+    { path: "/information", name: "information", component: () => import("@/views/RemoteSensingIntelligence.vue") },
     { path: "/aef", name: "aef", component: () => import("@/views/AefPlatform.vue") },
   ],
 });
