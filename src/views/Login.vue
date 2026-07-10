@@ -3,60 +3,52 @@ import { ref, onMounted } from "vue";
 import AstronautGuard from "@/components/AstronautGuard.vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import { getUsers, login } from "@/lib/auth";
-import type { UserListItem } from "@/lib/auth";
+import { login } from "@/lib/auth";
 
 const router = useRouter();
 const auth = useAuthStore();
-const users = ref<UserListItem[]>([]);
-const selectedUserId = ref<number | null>(null);
+
+const employeeNo = ref("");
 const password = ref("");
 const passwordFocused = ref(false);
 const error = ref("");
 const loading = ref(false);
 
-const mockUsers: UserListItem[] = [
-  { id: 1, name: "张明", role: "研究员" },
-  { id: 2, name: "李华", role: "工程师" },
-  { id: 3, name: "王芳", role: "数据科学家" },
-  { id: 4, name: "赵岩", role: "工程师" },
-];
-
-onMounted(async () => {
+onMounted(() => {
   if (auth.user) {
     router.push("/");
-    return;
   }
-  const res = await getUsers();
-  users.value = res.length > 0 ? res : mockUsers;
 });
 
 async function handleSubmit(e: Event) {
   e.preventDefault();
-  if (selectedUserId.value === null) {
-    error.value = "请选择用户";
+
+  const employeeNoValue = employeeNo.value.trim();
+
+  if (!employeeNoValue) {
+    error.value = "请输入工号";
     return;
   }
+
+  if (!password.value) {
+    error.value = "请输入密码";
+    return;
+  }
+
   loading.value = true;
   error.value = "";
+
   try {
-    const response = await login(selectedUserId.value, password.value);
+    const response = await login(employeeNoValue, password.value);
+
     auth.login(response.access_token, response.user);
+
     router.push("/");
-  } catch {
-    const selectedUser = users.value.find((u) => u.id === selectedUserId.value);
-    if (selectedUser && password.value === "123456") {
-      auth.login("mock-token-" + selectedUserId.value, {
-        id: selectedUserId.value,
-        name: selectedUser.name,
-        role: selectedUser.role,
-        is_admin: selectedUserId.value === 1,
-      });
-      router.push("/");
-    } else if (selectedUser) {
-      error.value = "密码错误，开发环境可使用密码 123456";
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      error.value = err.message;
     } else {
-      error.value = "登录失败，请检查密码";
+      error.value = "登录失败，请检查工号或密码";
     }
   } finally {
     loading.value = false;
@@ -77,11 +69,19 @@ async function handleSubmit(e: Event) {
       <AstronautGuard :passwordFocused="passwordFocused" />
       <form @submit="handleSubmit" class="login-form">
         <div class="form-group">
-          <label class="form-label"><span class="label-icon">👤</span> 选择用户</label>
-          <select v-model="selectedUserId" required class="form-select">
-            <option :value="null">-- 请选择用户 --</option>
-            <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }} {{ u.role ? `(${u.role})` : "" }}</option>
-          </select>
+          <label class="form-label">
+            <span class="label-icon">👤</span>
+            工号
+          </label>
+
+          <input
+            type="text"
+            v-model="employeeNo"
+            required
+            placeholder="请输入工号"
+            class="form-input"
+            autocomplete="username"
+          />
         </div>
         <div class="form-group">
           <label class="form-label"><span class="label-icon">🔒</span> 密码</label>
@@ -101,9 +101,6 @@ async function handleSubmit(e: Event) {
           <template v-else><span class="button-icon">🚀</span> 登录系统</template>
         </button>
       </form>
-      <div v-if="selectedUserId === 12" class="admin-notice">
-        <span class="notice-icon">⭐</span> 此账号拥有管理员权限，登录后可以访问数据管理功能
-      </div>
     </div>
   </div>
 </template>

@@ -68,23 +68,6 @@ function clearFilters() {
       <section class="dc-center-content">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
           <h1 class="dc-page-title">数据总览</h1>
-          <router-link
-            v-if="auth.isAdmin()"
-            to="/admin/datasets"
-            class="button"
-            style="
-              background: #ef4444;
-              color: white;
-              padding: 0.5rem 1rem;
-              border-radius: 0.375rem;
-              text-decoration: none;
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-            "
-          >
-            <span>🔧</span><span>数据管理</span>
-          </router-link>
         </div>
         <div class="dc-result-header">
           <p class="dc-count-line">

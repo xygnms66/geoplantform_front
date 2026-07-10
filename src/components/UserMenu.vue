@@ -4,9 +4,10 @@ import { useAuthStore } from "@/stores/auth";
 import { changePassword, getToken } from "@/lib/auth";
 
 const auth = useAuthStore();
-const showMenu = ref(false);
 
+const showMenu = ref(false);
 const showChangePwd = ref(false);
+
 const oldPwd = ref("");
 const newPwd = ref("");
 const confirmPwd = ref("");
@@ -28,6 +29,20 @@ function openChangePwd() {
   showChangePwd.value = true;
 }
 
+function closeChangePwd() {
+  showChangePwd.value = false;
+  pwdError.value = "";
+  pwdSuccess.value = false;
+  oldPwd.value = "";
+  newPwd.value = "";
+  confirmPwd.value = "";
+}
+
+function handleLogout() {
+  auth.logout();
+  closeMenu();
+}
+
 async function handleChangePwd() {
   pwdError.value = "";
   pwdSuccess.value = false;
@@ -36,26 +51,42 @@ async function handleChangePwd() {
     pwdError.value = "请填写所有字段";
     return;
   }
+
   if (newPwd.value !== confirmPwd.value) {
     pwdError.value = "两次输入的新密码不一致";
     return;
   }
+
   if (newPwd.value.length < 6) {
     pwdError.value = "新密码至少 6 位";
     return;
   }
 
+  if (oldPwd.value === newPwd.value) {
+    pwdError.value = "新密码不能与原密码相同";
+    return;
+  }
+
   pwdLoading.value = true;
+
   try {
     const token = getToken();
-    if (!token) throw new Error("未登录");
+
+    if (!token) {
+      throw new Error("登录已失效，请重新登录");
+    }
+
     await changePassword(token, oldPwd.value, newPwd.value);
+
     pwdSuccess.value = true;
-  } catch {
-    if (oldPwd.value === "123456") {
-      pwdSuccess.value = true;
+    oldPwd.value = "";
+    newPwd.value = "";
+    confirmPwd.value = "";
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      pwdError.value = err.message;
     } else {
-      pwdError.value = "原密码错误，开发环境原密码为 123456";
+      pwdError.value = "修改密码失败";
     }
   } finally {
     pwdLoading.value = false;
@@ -64,32 +95,31 @@ async function handleChangePwd() {
 </script>
 
 <template>
-  <div v-if="auth.loading" style="margin-left: auto; padding: 0 1rem; color: var(--muted)">加载中...</div>
-  <router-link v-else-if="!auth.user" to="/login" class="button" style="margin-left: auto">登录</router-link>
+  <div
+    v-if="auth.loading"
+    style="margin-left: auto; padding: 0 1rem; color: var(--muted)"
+  >
+    加载中...
+  </div>
+
+  <router-link
+    v-else-if="!auth.user"
+    to="/login"
+    class="button"
+    style="margin-left: auto"
+  >
+    登录
+  </router-link>
+
   <div v-else style="margin-left: auto; position: relative">
-    <button @click="showMenu = !showMenu" class="button" style="display: flex; align-items: center; gap: 0.5rem">
-      <span
-        style="
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 800;
-          color: #fff;
-          flex-shrink: 0;
-        "
-        >{{ auth.user.name.slice(0, 1) }}</span
-      >
-      <span>{{ auth.user.name }}</span>
-      <span
-        v-if="auth.user.is_admin"
-        style="background: #ef4444; color: white; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem"
-        >管理员</span
-      >
+    <button
+      type="button"
+      @click="showMenu = !showMenu"
+      class="button"
+      style="display: flex; align-items: center; gap: 0.35rem"
+    >
+      <span>{{ auth.user.name || "用户" }}</span>
+      <span style="font-size: 12px; opacity: 0.7">▾</span>
     </button>
 
     <div
@@ -103,30 +133,14 @@ async function handleChangePwd() {
         border: 1px solid rgba(148, 163, 184, 0.2);
         border-radius: 0.75rem;
         box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
-        min-width: 200px;
+        min-width: 180px;
         z-index: 50;
         backdrop-filter: blur(16px);
+        overflow: hidden;
       "
     >
-      <div style="padding: 0.75rem 1rem; border-bottom: 1px solid rgba(148, 163, 184, 0.15)">
-        <div style="font-weight: bold; color: var(--text)">{{ auth.user.name }}</div>
-        <div v-if="auth.user.role" style="font-size: 0.875rem; color: var(--muted)">{{ auth.user.role }}</div>
-      </div>
-      <router-link
-        v-if="auth.user.is_admin"
-        to="/admin/datasets"
-        @click="closeMenu"
-        style="
-          display: block;
-          padding: 0.75rem 1rem;
-          text-decoration: none;
-          color: var(--text);
-          border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-          transition: background 0.15s;
-        "
-        >数据管理</router-link
-      >
       <button
+        type="button"
         @click="openChangePwd"
         style="
           width: 100%;
@@ -146,11 +160,10 @@ async function handleChangePwd() {
         <span style="font-size: 14px">🔑</span>
         <span>修改密码</span>
       </button>
+
       <button
-        @click="
-          auth.logout();
-          closeMenu();
-        "
+        type="button"
+        @click="handleLogout"
         style="
           width: 100%;
           padding: 0.75rem 1rem;
@@ -160,70 +173,106 @@ async function handleChangePwd() {
           cursor: pointer;
           color: #f87171;
           transition: background 0.15s;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         "
       >
-        退出登录
+        <span style="font-size: 14px">🚪</span>
+        <span>退出登录</span>
       </button>
     </div>
   </div>
 
   <Teleport to="body">
-    <div v-if="showChangePwd" class="modal-mask" @click.self="showChangePwd = false">
-    <div class="change-pwd-panel">
-      <div class="modal-header">
-        <div>
-          <h2 class="modal-title">修改密码</h2>
-          <p class="modal-desc">请输入原密码和新密码</p>
-        </div>
-        <button type="button" class="modal-close" @click="showChangePwd = false">✕</button>
-      </div>
+    <div
+      v-if="showChangePwd"
+      class="modal-mask"
+      @click.self="closeChangePwd"
+    >
+      <div class="change-pwd-panel">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title">修改密码</h2>
+            <p class="modal-desc">请输入原密码和新密码</p>
+          </div>
 
-      <div v-if="pwdSuccess" class="pwd-success">
-        <div class="success-icon">✓</div>
-        <strong>密码修改成功</strong>
-        <p>请下次登录时使用新密码。</p>
-        <button type="button" class="primary-btn" @click="showChangePwd = false">知道了</button>
-      </div>
+          <button
+            type="button"
+            class="modal-close"
+            @click="closeChangePwd"
+          >
+            ✕
+          </button>
+        </div>
 
-      <div v-else class="pwd-form">
-        <div class="form-group">
-          <label class="form-label">原密码</label>
-          <input
-            v-model="oldPwd"
-            type="password"
-            class="form-input"
-            placeholder="请输入原密码"
-            @keyup.enter="handleChangePwd"
-          />
+        <div v-if="pwdSuccess" class="pwd-success">
+          <div class="success-icon">✓</div>
+          <strong>密码修改成功</strong>
+          <p>请下次登录时使用新密码。</p>
+
+          <button
+            type="button"
+            class="primary-btn"
+            @click="closeChangePwd"
+          >
+            知道了
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">新密码</label>
-          <input
-            v-model="newPwd"
-            type="password"
-            class="form-input"
-            placeholder="至少 6 位"
-            @keyup.enter="handleChangePwd"
-          />
+
+        <div v-else class="pwd-form">
+          <div class="form-group">
+            <label class="form-label">原密码</label>
+            <input
+              v-model="oldPwd"
+              type="password"
+              class="form-input"
+              placeholder="请输入原密码"
+              autocomplete="current-password"
+              @keyup.enter="handleChangePwd"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">新密码</label>
+            <input
+              v-model="newPwd"
+              type="password"
+              class="form-input"
+              placeholder="至少 6 位"
+              autocomplete="new-password"
+              @keyup.enter="handleChangePwd"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">确认新密码</label>
+            <input
+              v-model="confirmPwd"
+              type="password"
+              class="form-input"
+              placeholder="再次输入新密码"
+              autocomplete="new-password"
+              @keyup.enter="handleChangePwd"
+            />
+          </div>
+
+          <div v-if="pwdError" class="error-msg">
+            {{ pwdError }}
+          </div>
+
+          <button
+            type="button"
+            class="primary-btn"
+            :disabled="pwdLoading"
+            @click="handleChangePwd"
+          >
+            <template v-if="pwdLoading">提交中...</template>
+            <template v-else>确认修改</template>
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">确认新密码</label>
-          <input
-            v-model="confirmPwd"
-            type="password"
-            class="form-input"
-            placeholder="再次输入新密码"
-            @keyup.enter="handleChangePwd"
-          />
-        </div>
-        <div v-if="pwdError" class="error-msg">{{ pwdError }}</div>
-        <button type="button" class="primary-btn" :disabled="pwdLoading" @click="handleChangePwd">
-          <template v-if="pwdLoading">提交中...</template>
-          <template v-else>确认修改</template>
-        </button>
       </div>
     </div>
-  </div>
   </Teleport>
 </template>
 

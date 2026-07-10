@@ -2,10 +2,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export interface User {
   id: number;
-  name: string;
-  role?: string;
-  team_group_id?: number;
+  employee_no: string;
+  name: string | null;
+  role?: string | number;
+  team_group_id?: number | null;
   is_admin: boolean;
+  personal_member_id?: number | null;
 }
 
 export interface LoginResponse {
@@ -15,19 +17,29 @@ export interface LoginResponse {
 }
 
 export interface UserListItem {
-  id: number;
+  id?: number;
+  employee_no: string;
   name: string;
-  role?: string;
-  team_group_id?: number;
+  role?: string | number;
+  team_group_id?: number | null;
 }
 
-export async function login(userId: number, password: string): Promise<LoginResponse> {
-  const formData = new FormData();
-  formData.append("username", userId.toString());
+export async function login(
+  employeeNo: string,
+  password: string
+): Promise<LoginResponse> {
+  const formData = new URLSearchParams();
+
+  // 注意：这里字段名仍然叫 username，
+  // 但业务含义已经改成 employee_no / 工号
+  formData.append("username", employeeNo);
   formData.append("password", password);
 
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     body: formData,
   });
 
@@ -41,7 +53,9 @@ export async function login(userId: number, password: string): Promise<LoginResp
 
 export async function getCurrentUser(token: string): Promise<User> {
   const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
@@ -53,7 +67,11 @@ export async function getCurrentUser(token: string): Promise<User> {
 
 export async function getUsers(): Promise<UserListItem[]> {
   const response = await fetch(`${API_BASE_URL}/api/auth/users`);
-  if (!response.ok) return [];
+
+  if (!response.ok) {
+    return [];
+  }
+
   return response.json();
 }
 
@@ -67,6 +85,7 @@ export function getToken(): string | null {
   if (typeof window !== "undefined") {
     return localStorage.getItem("auth_token");
   }
+
   return null;
 }
 
@@ -76,18 +95,28 @@ export function removeToken() {
   }
 }
 
-export async function changePassword(token: string, oldPassword: string, newPassword: string): Promise<void> {
+export async function changePassword(
+  token: string,
+  oldPassword: string,
+  newPassword: string
+): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+    body: JSON.stringify({
+      old_password: oldPassword,
+      new_password: newPassword,
+    }),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: "修改密码失败" }));
+    const error = await response
+      .json()
+      .catch(() => ({ detail: "修改密码失败" }));
+
     throw new Error(error.detail || "修改密码失败");
   }
 }
