@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import StudioDashboardPanel from "@/components/aef/StudioDashboardPanel.vue";
-import StudioProjectCenterPanel from "@/components/aef/StudioProjectCenterPanel.vue";
-import StudioDataCenterPanel from "@/components/aef/StudioDataCenterPanel.vue";
-import { studioSections, type StudioSectionKey } from "@/lib/aefStudioData";
+import StudioDashboardPanel from "@/components/workbench/StudioDashboardPanel.vue";
+import StudioProjectCenterPanel from "@/components/workbench/StudioProjectCenterPanel.vue";
+import StudioDataCenterPanel from "@/components/workbench/StudioDataCenterPanel.vue";
+import { studioSections, type StudioSectionKey } from "@/lib/workbenchStudioData";
 
 const props = withDefaults(defineProps<{ initialTab?: string }>(), {
   initialTab: "dashboard",

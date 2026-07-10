@@ -203,7 +203,7 @@ export type PipelineMiniCard = {
   href: string;
 };
 
-export type AefNews = {
+export type WorkbenchNews = {
   id: string;
   category: "model" | "data" | "eval";
   domain: "remote" | "multimodal" | "nlp" | "cv";

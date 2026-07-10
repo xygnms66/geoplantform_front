@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AefPlatformClient from "@/components/AefPlatformClient.vue";
+import WorkbenchPlatformClient from "@/components/WorkbenchPlatformClient.vue";
 </script>
 
 <template>
@@ -12,6 +12,6 @@ import AefPlatformClient from "@/components/AefPlatformClient.vue";
     </p>
   </section>
   <section class="section">
-    <AefPlatformClient initial-tab="explore" />
+    <WorkbenchPlatformClient initial-tab="explore" />
   </section>
 </template>

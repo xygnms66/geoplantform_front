@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { aefNews } from "@/lib/aefData";
+import { workbenchNews } from "@/lib/workbenchData";
 
 type DomainFilter = "all" | "remote" | "multimodal" | "nlp" | "cv";
 
@@ -9,7 +9,7 @@ const activeTag = ref<string | null>(null);
 const followTags = ["模型", "数据", "评测", "遥感", "多模态"];
 
 const newsItems = computed(() =>
-  aefNews.filter((item) => {
+  workbenchNews.filter((item) => {
     const domainOk = activeDomain.value === "all" || item.domain === activeDomain.value;
     const tagOk = activeTag.value == null || item.tags.includes(activeTag.value);
     return domainOk && tagOk;

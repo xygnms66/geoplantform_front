@@ -23,7 +23,7 @@ import {
   dashboardProjects,
   dashboardStatCards,
   dashboardTasks,
-} from "@/lib/aefStudioData";
+} from "@/lib/workbenchStudioData";
 
 const agentOpen = ref(false);
 const taskModalOpen = ref(false);

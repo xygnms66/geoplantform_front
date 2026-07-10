@@ -15,7 +15,7 @@ const publicNavItems = [
   { href: "/information", label: "资讯" },
 ];
 
-const authNavItems = [{ href: "/aef", label: "工作台" }];
+const authNavItems = [{ href: "/workbench", label: "工作台" }];
 
 const allItems = () => (auth.user ? [...publicNavItems, ...authNavItems] : publicNavItems);
 

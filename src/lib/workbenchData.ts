@@ -1,10 +1,10 @@
-import type { AefNews } from "@/types";
+import type { WorkbenchNews } from "@/types";
 
-export const aefTabs = [
+export const workbenchTabs = [
   { key: "explore" as const, label: "探测", icon: "◎" },
 ];
 
-export const aefNews: AefNews[] = [
+export const workbenchNews: WorkbenchNews[] = [
   { id: "n1", category: "model", domain: "remote", title: "OlmoEarth v2 引入窗口注意力机制", desc: "借鉴 Swin 路线，在多模态融合层引入局部窗口注意力，训练效率明显提升。", date: "2026-07-02", tags: ["模型", "架构", "遥感"] },
   { id: "n2", category: "data", domain: "remote", title: "Sentinel-2 L2A 更新至 2026 年 6 月", desc: "杭州研究区域数据已补齐，可直接进入新一轮训练集构建。", date: "2026-07-01", tags: ["数据", "S2", "光学"] },
   { id: "n3", category: "eval", domain: "remote", title: "LoveDA v2 遥感分割基准发布", desc: "新增城市场景类别与跨区域测试集，适合做新一轮通用分割评测。", date: "2026-06-30", tags: ["测评", "分割", "基准"] },

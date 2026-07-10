@@ -8,7 +8,7 @@ import {
   projectSummary,
   projectViewTabs,
   workflowColumns,
-} from "@/lib/aefStudioData";
+} from "@/lib/workbenchStudioData";
 
 const activeView = ref("看板");
 const currentProject = ref(projectProjects[0]);

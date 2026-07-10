@@ -25,7 +25,7 @@ import {
   dataStatuses,
   dataStores,
   dataTabs,
-} from "@/lib/aefStudioData";
+} from "@/lib/workbenchStudioData";
 
 const taskModalOpen = ref(false);
 

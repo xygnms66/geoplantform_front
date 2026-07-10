@@ -21,7 +21,7 @@ export type StudioWorkflowColumn = {
 };
 
 export const studioSections: { key: StudioSectionKey; label: string; icon: string; desc: string }[] = [
-  { key: "dashboard", label: "工作台", icon: "WS", desc: "今日待办、项目进展、资讯和 Agent 动作" },
+  { key: "dashboard", label: "总工作台", icon: "WS", desc: "今日待办、项目进展、资讯和 Agent 动作" },
   { key: "projects", label: "项目中心", icon: "PM", desc: "项目、周期、模块、工作项与工作流" },
   { key: "data", label: "数据中心", icon: "DC", desc: "数据资产、对象存储、入库审核与质量管理" },
 ];
