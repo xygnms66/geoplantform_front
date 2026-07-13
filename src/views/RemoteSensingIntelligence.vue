@@ -1,16 +1,5 @@
 <template>
   <div class="intelligence-page">
-    <!-- 页面搜索栏 -->
-    <section class="search-only-bar">
-      <div class="global-search">
-        <span class="search-icon">⌕</span>
-        <input
-          v-model="searchKeyword"
-          placeholder="搜索资讯 / 数据集 / 项目 / 任务 / 关键词"
-        />
-      </div>
-    </section>
-
     <main class="page-main">
       <!-- Hero -->
       <section class="hero-card">
@@ -415,7 +404,6 @@
 <script setup>
 import { computed, ref } from 'vue'
 
-const searchKeyword = ref('')
 const selectedTime = ref('最近7天')
 const selectedType = ref('全部')
 const selectedTopic = ref('全部')
@@ -535,21 +523,13 @@ const topicOptions = ['预训练', '变化检测', '目标检测', '热风险', 
 const flattenItems = computed(() => timelineGroups.flatMap((group) => group.items))
 
 const filteredItems = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase()
-
   return flattenItems.value.filter((item) => {
-    const matchKeyword =
-      !keyword ||
-      item.title.toLowerCase().includes(keyword) ||
-      item.summary.toLowerCase().includes(keyword) ||
-      item.tags.some((tag) => tag.toLowerCase().includes(keyword))
-
     const matchType = selectedType.value === '全部' || item.type === selectedType.value
     const matchStatus = selectedStatus.value === '全部' || item.status === selectedStatus.value
     const matchTopic =
       selectedTopic.value === '全部' || item.tags.includes(selectedTopic.value)
 
-    return matchKeyword && matchType && matchStatus && matchTopic
+    return matchType && matchStatus && matchTopic
   })
 })
 
@@ -670,6 +650,8 @@ function statusClass(status) {
 }
 
 .intelligence-page {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   min-height: 100vh;
   color: #e5f3ff;
   background:
@@ -738,6 +720,7 @@ function statusClass(status) {
   font-size: 12px;
 }
 
+<<<<<<< Updated upstream
 .global-search {
   position: relative;
   width: 100%;
@@ -767,6 +750,8 @@ function statusClass(status) {
   color: #64748b;
 }
 
+=======
+>>>>>>> Stashed changes
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -826,9 +811,10 @@ button {
 }
 
 .page-main {
-  width: min(1520px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 30px 0 60px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 24px 28px 60px;
 }
 
 .hero-card,
@@ -1031,7 +1017,7 @@ button {
 
 .layout-grid {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 360px;
+  grid-template-columns: 240px minmax(0, 1fr) 380px;
   gap: 20px;
   align-items: start;
 }
@@ -1743,13 +1729,8 @@ button:hover {
 }
 
 @media (max-width: 960px) {
-  .search-only-bar {
-    width: min(100% - 28px, 1520px);
-    padding: 18px 0 14px;
-  }
-
   .page-main {
-    width: min(100% - 28px, 1520px);
+    padding: 20px 16px 48px;
   }
 }
 @media (max-width: 640px) {
