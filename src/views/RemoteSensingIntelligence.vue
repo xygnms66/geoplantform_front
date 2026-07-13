@@ -688,6 +688,12 @@ function statusClass(status) {
     sans-serif;
 }
 
+.search-only-bar {
+  display: flex;
+  justify-content: center;
+  padding-top: 48px;
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -734,7 +740,8 @@ function statusClass(status) {
 
 .global-search {
   position: relative;
-  max-width: 760px;
+  width: 100%;
+  max-width: 820px;
 }
 
 .search-icon {
