@@ -1,40 +1,36 @@
 <template>
-  <div class="intelligence-page">
-    <main class="page-main">
-      <!-- Hero -->
-      <section class="hero-card">
-        <div class="hero-content">
-          <div class="eyebrow">Geo Intelligence Radar</div>
-          <h1>遥感情报中心</h1>
-          <p>
-            持续跟踪遥感模型、数据集、论文、开源项目和行业动态。
-            本周新增 <b>{{ stats.weekly }}</b> 条资讯，Agent 识别
-            <b>{{ stats.highValue }}</b> 条高价值动态，建议转任务
-            <b>{{ stats.toTask }}</b> 条。
-          </p>
+  <section class="section hero-card project-hero intel-hero">
+    <div class="hero-content">
+      <div class="eyebrow">Geo Intelligence Radar</div>
+      <h1>遥感情报中心</h1>
+      <p>
+        持续跟踪遥感模型、数据集、论文、开源项目和行业动态。
+        本周新增 <b>{{ stats.weekly }}</b> 条资讯，Agent 识别
+        <b>{{ stats.highValue }}</b> 条高价值动态，建议转任务
+        <b>{{ stats.toTask }}</b> 条。
+      </p>
 
-          <div class="hero-actions">
-            <button class="primary-btn">生成周报</button>
-            <button class="secondary-btn">添加资讯源</button>
-            <button class="secondary-btn">手动录入</button>
-            <button class="secondary-btn" @click="agentOpen = true">Agent 分析</button>
-          </div>
-        </div>
+      <div class="hero-actions">
+        <button class="primary-btn">生成周报</button>
+        <button class="secondary-btn">添加资讯源</button>
+        <button class="secondary-btn">手动录入</button>
+        <button class="secondary-btn" @click="agentOpen = true">Agent 分析</button>
+      </div>
+    </div>
 
-        <div class="radar-visual">
-          <div class="radar-circle circle-1"></div>
-          <div class="radar-circle circle-2"></div>
-          <div class="radar-circle circle-3"></div>
-          <div class="radar-line"></div>
-          <div class="radar-dot dot-1"></div>
-          <div class="radar-dot dot-2"></div>
-          <div class="radar-dot dot-3"></div>
-        </div>
-      </section>
+    <div class="radar-visual">
+      <div class="radar-circle circle-1"></div>
+      <div class="radar-circle circle-2"></div>
+      <div class="radar-circle circle-3"></div>
+      <div class="radar-line"></div>
+      <div class="radar-dot dot-1"></div>
+      <div class="radar-dot dot-2"></div>
+      <div class="radar-dot dot-3"></div>
+    </div>
+  </section>
 
-      <!-- 统计卡片 -->
-      <section class="stats-grid">
-        <article v-for="card in statCards" :key="card.title" class="stat-card">
+  <section class="section stats-grid">
+    <article v-for="card in statCards" :key="card.title" class="stat-card panel">
           <div class="stat-icon">{{ card.icon }}</div>
           <div>
             <div class="stat-title">{{ card.title }}</div>
@@ -42,12 +38,10 @@
             <div class="stat-desc">{{ card.desc }}</div>
           </div>
         </article>
-      </section>
+  </section>
 
-      <!-- 主体布局 -->
-      <section class="layout-grid">
-        <!-- 左侧筛选 -->
-        <aside class="filter-panel">
+  <section class="section layout-grid">
+    <aside class="filter-panel panel">
           <div class="panel-title">筛选条件</div>
 
           <div class="filter-block">
@@ -105,8 +99,7 @@
           </div>
         </aside>
 
-        <!-- 中间时间轴 -->
-        <section class="timeline-panel">
+    <section class="timeline-panel panel">
           <div class="timeline-header">
             <div>
               <h2>情报时间轴</h2>
@@ -125,8 +118,7 @@
             </div>
           </div>
 
-          <!-- 置顶重点情报 -->
-          <article class="featured-card">
+          <article class="featured-card panel">
             <div class="featured-top">
               <span class="featured-badge">今日重点情报</span>
               <span class="score-badge">Agent Score 94</span>
@@ -165,7 +157,7 @@
                 <article
                   v-for="item in group.items"
                   :key="item.id"
-                  class="news-card"
+                class="news-card panel"
                 >
                   <div class="news-type-line" :class="typeClass(item.type)"></div>
 
@@ -225,7 +217,7 @@
             <article
               v-for="item in filteredItems"
               :key="item.id"
-              class="compact-news-card"
+              class="compact-news-card panel"
             >
               <div class="compact-top">
                 <span class="type-tag" :class="typeClass(item.type)">
@@ -243,7 +235,7 @@
 
           <!-- 周报视图 -->
           <div v-else class="weekly-report">
-            <div class="report-block">
+            <div class="report-block panel">
               <h3>本周遥感情报简报草稿</h3>
               <p>
                 本周遥感领域动态主要集中在遥感基础模型、多模态预训练、
@@ -252,7 +244,7 @@
               </p>
             </div>
 
-            <div class="report-section">
+            <div class="report-section panel">
               <h4>一、遥感基础模型</h4>
               <p>
                 新增多篇基础模型综述与 Benchmark 论文，关注重点从模型结构逐渐转向数据组织、
@@ -260,7 +252,7 @@
               </p>
             </div>
 
-            <div class="report-section">
+            <div class="report-section panel">
               <h4>二、数据集更新</h4>
               <p>
                 WorldCover、Major TOM 等数据动态值得纳入数据中心候选池，建议创建数据调研任务。
@@ -271,9 +263,8 @@
           </div>
         </section>
 
-        <!-- 右侧分析栏 -->
-        <aside class="insight-panel">
-          <section class="insight-card">
+    <aside class="insight-panel">
+      <section class="insight-card panel">
             <h3>本周情报总结</h3>
             <p>
               本周共新增 {{ stats.weekly }} 条遥感资讯，主要集中在遥感基础模型、
@@ -281,7 +272,7 @@
             </p>
           </section>
 
-          <section class="insight-card">
+      <section class="insight-card panel">
             <h3>趋势变化</h3>
             <div class="trend-list">
               <div v-for="trend in trends" :key="trend.name" class="trend-item">
@@ -294,7 +285,7 @@
             </div>
           </section>
 
-          <section class="insight-card">
+      <section class="insight-card panel">
             <h3>Agent 推荐动作</h3>
             <div class="action-list">
               <article
@@ -312,7 +303,7 @@
             </div>
           </section>
 
-          <section class="insight-card">
+      <section class="insight-card panel">
             <h3>待处理清单</h3>
             <ul class="todo-list">
               <li>3 条未读资讯</li>
@@ -321,83 +312,78 @@
               <li>4 条可纳入本周周报</li>
             </ul>
           </section>
-        </aside>
-      </section>
+    </aside>
+  </section>
 
-      <!-- 底部资讯源状态 -->
-      <section class="source-status-panel">
-        <div class="section-header">
-          <div>
-            <h2>资讯源状态</h2>
-            <p>监控 arXiv、GitHub、HuggingFace、ESA、NASA 等资讯来源。</p>
-          </div>
-          <button class="text-btn">查看抓取日志</button>
-        </div>
-
-        <div class="source-table">
-          <div class="source-row source-head">
-            <span>来源</span>
-            <span>类型</span>
-            <span>状态</span>
-            <span>最近抓取</span>
-            <span>新增</span>
-            <span>操作</span>
-          </div>
-
-          <div
-            v-for="source in sources"
-            :key="source.name"
-            class="source-row"
-          >
-            <span>{{ source.name }}</span>
-            <span>{{ source.type }}</span>
-            <span>
-              <i class="source-status" :class="{ error: source.status === '异常' }"></i>
-              {{ source.status }}
-            </span>
-            <span>{{ source.last }}</span>
-            <span>{{ source.count }}</span>
-            <span>
-              <button class="mini-btn">查看</button>
-            </span>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Agent 悬浮按钮 -->
-    <button class="agent-float" @click="agentOpen = true">
-      🤖 Agent
-    </button>
-
-    <!-- Agent 抽屉 -->
-    <div v-if="agentOpen" class="drawer-mask" @click.self="agentOpen = false">
-      <aside class="agent-drawer">
-        <div class="drawer-header">
-          <div>
-            <h2>遥感情报 Agent</h2>
-            <p>当前页面：遥感情报时间轴</p>
-          </div>
-          <button class="icon-btn" @click="agentOpen = false">✕</button>
-        </div>
-
-        <div class="suggestions">
-          <button>帮我总结本周遥感资讯</button>
-          <button>哪些资讯适合转成任务？</button>
-          <button>哪些数据更新适合入库？</button>
-          <button>根据筛选结果生成周报</button>
-        </div>
-
-        <div class="agent-message">
-          我可以根据时间轴中的资讯，自动提炼趋势、生成周报、创建任务，并推荐需要加入数据中心的候选数据。
-        </div>
-
-        <div class="chat-input">
-          <input placeholder="输入问题，例如：本周最值得关注的资讯是什么？" />
-          <button>发送</button>
-        </div>
-      </aside>
+  <section class="section source-status-panel panel">
+    <div class="section-header">
+      <div>
+        <h2>资讯源状态</h2>
+        <p>监控 arXiv、GitHub、HuggingFace、ESA、NASA 等资讯来源。</p>
+      </div>
+      <button class="text-btn">查看抓取日志</button>
     </div>
+
+    <div class="source-table">
+      <div class="source-row source-head">
+        <span>来源</span>
+        <span>类型</span>
+        <span>状态</span>
+        <span>最近抓取</span>
+        <span>新增</span>
+        <span>操作</span>
+      </div>
+
+      <div
+        v-for="source in sources"
+        :key="source.name"
+        class="source-row"
+      >
+        <span>{{ source.name }}</span>
+        <span>{{ source.type }}</span>
+        <span>
+          <i class="source-status" :class="{ error: source.status === '异常' }"></i>
+          {{ source.status }}
+        </span>
+        <span>{{ source.last }}</span>
+        <span>{{ source.count }}</span>
+        <span>
+          <button class="mini-btn">查看</button>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <button class="agent-float" @click="agentOpen = true">
+    🤖 Agent
+  </button>
+
+  <div v-if="agentOpen" class="drawer-mask" @click.self="agentOpen = false">
+    <aside class="agent-drawer">
+      <div class="drawer-header">
+        <div>
+          <h2>遥感情报 Agent</h2>
+          <p>当前页面：遥感情报时间轴</p>
+        </div>
+        <button class="icon-btn" @click="agentOpen = false">✕</button>
+      </div>
+
+      <div class="suggestions">
+        <button>帮我总结本周遥感资讯</button>
+        <button>哪些资讯适合转成任务？</button>
+        <button>哪些数据更新适合入库？</button>
+        <button>根据筛选结果生成周报</button>
+      </div>
+
+      <div class="agent-message">
+        我可以根据时间轴中的资讯，自动提炼趋势、生成周报、创建任务，并推荐需要加入数据中心的候选数据。
+      </div>
+
+      <div class="chat-input">
+        <input placeholder="输入问题，例如：本周最值得关注的资讯是什么？" />
+        <button>发送</button>
+      </div>
+    </aside>
   </div>
 </template>
 
@@ -645,137 +631,22 @@ function statusClass(status) {
 </script>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
-
-.intelligence-page {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  min-height: 100vh;
-  color: #e5f3ff;
-  background:
-    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.2), transparent 30%),
-    radial-gradient(circle at 88% 12%, rgba(37, 99, 235, 0.18), transparent 30%),
-    linear-gradient(135deg, #020617 0%, #07111f 48%, #020617 100%);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    "PingFang SC",
-    "Microsoft YaHei",
-    sans-serif;
-}
-
-.search-only-bar {
-  display: flex;
-  justify-content: center;
-  padding-top: 48px;
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: grid;
-  grid-template-columns: 300px 1fr auto;
-  align-items: center;
-  gap: 24px;
-  height: 72px;
-  padding: 0 32px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(2, 6, 23, 0.78);
-  backdrop-filter: blur(18px);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-logo {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  color: white;
-  font-weight: 900;
-  background: linear-gradient(135deg, #38bdf8, #2563eb);
-  box-shadow: 0 12px 32px rgba(56, 189, 248, 0.28);
-}
-
-.brand-title {
-  font-size: 18px;
-  font-weight: 850;
-}
-
-.brand-subtitle {
-  margin-top: 2px;
-  color: #8ea5bd;
-  font-size: 12px;
-}
-
-<<<<<<< Updated upstream
-.global-search {
-  position: relative;
-  width: 100%;
-  max-width: 820px;
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  color: #7dd3fc;
-  transform: translateY(-50%);
-}
-
-.global-search input {
-  width: 100%;
-  height: 42px;
-  padding: 0 16px 0 42px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 999px;
-  color: #dff5ff;
-  background: rgba(15, 23, 42, 0.68);
-  outline: none;
-}
-
-.global-search input::placeholder {
-  color: #64748b;
-}
-
-=======
->>>>>>> Stashed changes
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 button {
   cursor: pointer;
   border: none;
   font-family: inherit;
 }
 
-.ghost-btn,
-.icon-btn,
 .secondary-btn,
 .primary-btn,
 .text-btn,
-.mini-btn {
+.mini-btn,
+.icon-btn {
   transition: all 0.18s ease;
 }
 
-.ghost-btn,
-.icon-btn,
-.secondary-btn {
+.secondary-btn,
+.icon-btn {
   height: 40px;
   padding: 0 14px;
   border: 1px solid rgba(148, 163, 184, 0.2);
@@ -799,53 +670,14 @@ button {
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
 }
 
-.avatar {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: white;
-  font-weight: 800;
-  background: linear-gradient(135deg, #22d3ee, #1d4ed8);
-}
-
-.page-main {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 24px 28px 60px;
-}
-
-.hero-card,
-.stat-card,
-.filter-panel,
-.timeline-panel,
-.insight-card,
-.source-status-panel,
-.news-card,
-.featured-card,
-.compact-news-card,
-.report-block,
-.report-section {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.68);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.26);
-}
-
-.hero-card {
-  position: relative;
+.intel-hero {
   display: grid;
   grid-template-columns: 1fr 260px;
   gap: 24px;
-  min-height: 230px;
-  overflow: hidden;
-  padding: 30px;
-  border-radius: 30px;
+  align-items: stretch;
 }
 
-.hero-card::before {
+.intel-hero::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -862,29 +694,7 @@ button {
   z-index: 1;
 }
 
-.eyebrow {
-  margin-bottom: 10px;
-  color: #38bdf8;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.hero-card h1 {
-  margin: 0;
-  font-size: 44px;
-  line-height: 1.1;
-}
-
-.hero-card p {
-  max-width: 780px;
-  margin: 14px 0 0;
-  color: #9fb1c7;
-  line-height: 1.8;
-}
-
-.hero-card b {
+.intel-hero p b {
   color: #67e8f9;
 }
 
@@ -976,7 +786,6 @@ button {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
-  margin: 20px 0;
 }
 
 .stat-card {
@@ -1144,11 +953,9 @@ button {
 
 .featured-card {
   margin-bottom: 22px;
-  padding: 18px;
-  border-radius: 20px;
   background:
     linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(37, 99, 235, 0.08)),
-    rgba(15, 23, 42, 0.7);
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
 }
 
 .featured-top {
@@ -1549,9 +1356,7 @@ button {
 }
 
 .source-status-panel {
-  margin-top: 20px;
   padding: 20px;
-  border-radius: 24px;
 }
 
 .text-btn {
@@ -1729,10 +1534,11 @@ button:hover {
 }
 
 @media (max-width: 960px) {
-  .page-main {
-    padding: 20px 16px 48px;
+  .intel-hero {
+    grid-template-columns: 1fr;
   }
 }
+
 @media (max-width: 640px) {
   .stats-grid {
     grid-template-columns: 1fr;
