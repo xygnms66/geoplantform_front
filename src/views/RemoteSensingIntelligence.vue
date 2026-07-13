@@ -1862,7 +1862,7 @@ button:hover {
     padding: 0 14px;
   }
 
-  .agent-drawer {
+  .agent-drawer { 
     padding: 18px;
   }
 
