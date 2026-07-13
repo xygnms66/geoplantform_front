@@ -21,15 +21,7 @@
           </div>
         </div>
 
-        <div class="radar-visual">
-          <div class="radar-circle circle-1"></div>
-          <div class="radar-circle circle-2"></div>
-          <div class="radar-circle circle-3"></div>
-          <div class="radar-line"></div>
-          <div class="radar-dot dot-1"></div>
-          <div class="radar-dot dot-2"></div>
-          <div class="radar-dot dot-3"></div>
-        </div>
+        <RadarVisual />
       </section>
 
       <!-- 页面搜索栏 -->
@@ -414,6 +406,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import RadarVisual from '@/components/RadarVisual.vue'
 
 const searchKeyword = ref('')
 const selectedTime = ref('最近7天')
@@ -907,82 +900,7 @@ button {
   margin-top: 24px;
 }
 
-.radar-visual {
-  position: relative;
-  z-index: 1;
-  width: 220px;
-  height: 220px;
-  align-self: center;
-  justify-self: center;
-}
 
-.radar-circle {
-  position: absolute;
-  inset: 50%;
-  border: 1px solid rgba(103, 232, 249, 0.25);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.circle-1 {
-  width: 210px;
-  height: 210px;
-}
-
-.circle-2 {
-  width: 145px;
-  height: 145px;
-}
-
-.circle-3 {
-  width: 78px;
-  height: 78px;
-}
-
-.radar-line {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 98px;
-  height: 2px;
-  background: linear-gradient(90deg, #67e8f9, transparent);
-  transform-origin: left center;
-  animation: scan 5s linear infinite;
-}
-
-.radar-dot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #67e8f9;
-  box-shadow: 0 0 18px rgba(103, 232, 249, 0.9);
-}
-
-.dot-1 {
-  left: 72px;
-  top: 56px;
-}
-
-.dot-2 {
-  right: 58px;
-  top: 112px;
-}
-
-.dot-3 {
-  left: 108px;
-  bottom: 44px;
-}
-
-@keyframes scan {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .stats-grid {
   display: grid;
@@ -1744,7 +1662,7 @@ button:hover {
     padding: 30px;
   }
 
-  .radar-visual {
+  .radar-three {
     display: none;
   }
 

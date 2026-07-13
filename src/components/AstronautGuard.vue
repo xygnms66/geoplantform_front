@@ -25,7 +25,7 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
   <div ref="containerRef" class="astronaut-group">
     <!-- Astronaut 1 - Blue (left) -->
     <div class="astronaut astro-left">
-      <svg viewBox="0 0 140 180" width="110" height="140">
+      <svg viewBox="0 0 140 180" width="88" height="112">
         <defs>
           <radialGradient id="helmet1" cx="45%" cy="40%">
             <stop offset="0%" stop-color="#e8eef5" />
@@ -139,28 +139,10 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
           <path d="M53 45 Q60 41 67 45" stroke="#5a9ad5" stroke-width="2.2" fill="none" stroke-linecap="round" />
           <path d="M73 45 Q80 41 87 45" stroke="#5a9ad5" stroke-width="2.2" fill="none" stroke-linecap="round" />
         </g>
-        <!-- Hands -->
-        <g
-          :style="{
-            transform: passwordFocused ? 'translateY(-52px) scale(1.05)' : 'translateY(20px) scale(0.7)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            opacity: passwordFocused ? 1 : 0,
-          }"
-        >
-          <ellipse cx="56" cy="56" rx="12" ry="9" fill="#c5d5e8" />
-          <ellipse cx="48" cy="51" rx="3.5" ry="3" fill="#c5d5e8" />
-          <ellipse cx="53" cy="48" rx="3.5" ry="3" fill="#c5d5e8" />
-          <ellipse cx="58" cy="47" rx="3.2" ry="2.8" fill="#c5d5e8" />
-          <ellipse cx="63" cy="49" rx="3" ry="2.5" fill="#c5d5e8" />
-          <ellipse cx="84" cy="56" rx="12" ry="9" fill="#c5d5e8" />
-          <ellipse cx="77" cy="49" rx="3" ry="2.5" fill="#c5d5e8" />
-          <ellipse cx="82" cy="47" rx="3.2" ry="2.8" fill="#c5d5e8" />
-          <ellipse cx="87" cy="48" rx="3.5" ry="3" fill="#c5d5e8" />
-          <ellipse cx="92" cy="51" rx="3.5" ry="3" fill="#c5d5e8" />
-        </g>
+
         <!-- Antenna -->
-        <line x1="70" y1="22" x2="70" y2="8" stroke="#8a9ab0" stroke-width="2" />
-        <circle cx="70" cy="6" r="3" fill="#ff6b6b">
+        <line x1="70" y1="22" x2="70" y2="14" stroke="#8a9ab0" stroke-width="2" />
+        <circle cx="70" cy="12" r="3" fill="#ff6b6b">
           <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite" />
         </circle>
       </svg>
@@ -168,7 +150,7 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
 
     <!-- Astronaut 2 - Green (center, bigger) -->
     <div class="astronaut astro-center">
-      <svg viewBox="0 0 140 180" width="128" height="162">
+      <svg viewBox="0 0 140 180" width="102" height="130">
         <defs>
           <radialGradient id="helmet2" cx="45%" cy="40%">
             <stop offset="0%" stop-color="#e0f0ea" />
@@ -294,28 +276,10 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
           <path d="M51 40 Q59 35 67 40" stroke="#4acaa6" stroke-width="2.5" fill="none" stroke-linecap="round" />
           <path d="M73 40 Q81 35 89 40" stroke="#4acaa6" stroke-width="2.5" fill="none" stroke-linecap="round" />
         </g>
-        <!-- Hands -->
-        <g
-          :style="{
-            transform: passwordFocused ? 'translateY(-56px) scale(1.08)' : 'translateY(22px) scale(0.65)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            opacity: passwordFocused ? 1 : 0,
-          }"
-        >
-          <ellipse cx="56" cy="52" rx="14" ry="10" fill="#b8d8cc" />
-          <ellipse cx="46" cy="46" rx="4" ry="3.5" fill="#b8d8cc" />
-          <ellipse cx="52" cy="43" rx="4" ry="3.5" fill="#b8d8cc" />
-          <ellipse cx="58" cy="42" rx="3.8" ry="3.2" fill="#b8d8cc" />
-          <ellipse cx="64" cy="44" rx="3.5" ry="3" fill="#b8d8cc" />
-          <ellipse cx="84" cy="52" rx="14" ry="10" fill="#b8d8cc" />
-          <ellipse cx="76" cy="44" rx="3.5" ry="3" fill="#b8d8cc" />
-          <ellipse cx="82" cy="42" rx="3.8" ry="3.2" fill="#b8d8cc" />
-          <ellipse cx="88" cy="43" rx="4" ry="3.5" fill="#b8d8cc" />
-          <ellipse cx="94" cy="46" rx="4" ry="3.5" fill="#b8d8cc" />
-        </g>
+
         <!-- Antenna -->
-        <line x1="70" y1="16" x2="70" y2="2" stroke="#7a9a8a" stroke-width="2.5" />
-        <circle cx="70" cy="0" r="4" fill="#4ade80">
+        <line x1="70" y1="16" x2="70" y2="8" stroke="#7a9a8a" stroke-width="2.5" />
+        <circle cx="70" cy="6" r="4" fill="#4ade80">
           <animate attributeName="opacity" values="1;0.15;1" dur="1.5s" repeatCount="indefinite" />
         </circle>
       </svg>
@@ -323,7 +287,7 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
 
     <!-- Astronaut 3 - Purple (right) -->
     <div class="astronaut astro-right">
-      <svg viewBox="0 0 140 180" width="110" height="140">
+      <svg viewBox="0 0 140 180" width="88" height="112">
         <defs>
           <radialGradient id="helmet3" cx="45%" cy="40%">
             <stop offset="0%" stop-color="#ece0f8" />
@@ -437,28 +401,10 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
           <path d="M53 45 Q60 41 67 45" stroke="#aa7ae0" stroke-width="2.2" fill="none" stroke-linecap="round" />
           <path d="M73 45 Q80 41 87 45" stroke="#aa7ae0" stroke-width="2.2" fill="none" stroke-linecap="round" />
         </g>
-        <!-- Hands -->
-        <g
-          :style="{
-            transform: passwordFocused ? 'translateY(-52px) scale(1.05)' : 'translateY(20px) scale(0.7)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            opacity: passwordFocused ? 1 : 0,
-          }"
-        >
-          <ellipse cx="56" cy="56" rx="12" ry="9" fill="#d0b8e8" />
-          <ellipse cx="48" cy="51" rx="3.5" ry="3" fill="#d0b8e8" />
-          <ellipse cx="53" cy="48" rx="3.5" ry="3" fill="#d0b8e8" />
-          <ellipse cx="58" cy="47" rx="3.2" ry="2.8" fill="#d0b8e8" />
-          <ellipse cx="63" cy="49" rx="3" ry="2.5" fill="#d0b8e8" />
-          <ellipse cx="84" cy="56" rx="12" ry="9" fill="#d0b8e8" />
-          <ellipse cx="77" cy="49" rx="3" ry="2.5" fill="#d0b8e8" />
-          <ellipse cx="82" cy="47" rx="3.2" ry="2.8" fill="#d0b8e8" />
-          <ellipse cx="87" cy="48" rx="3.5" ry="3" fill="#d0b8e8" />
-          <ellipse cx="92" cy="51" rx="3.5" ry="3" fill="#d0b8e8" />
-        </g>
+
         <!-- Antenna -->
-        <line x1="70" y1="22" x2="70" y2="8" stroke="#9a8ab0" stroke-width="2" />
-        <circle cx="70" cy="6" r="3" fill="#c084fc">
+        <line x1="70" y1="22" x2="70" y2="14" stroke="#9a8ab0" stroke-width="2" />
+        <circle cx="70" cy="12" r="3" fill="#c084fc">
           <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" repeatCount="indefinite" />
         </circle>
       </svg>
@@ -489,8 +435,8 @@ const eyeY = computed(() => (mouseY.value - 0.5) * 5);
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: 170px;
-  margin-bottom: 6px;
+  height: 135px;
+  margin-bottom: 4px;
   overflow: visible;
 }
 .astronaut {
