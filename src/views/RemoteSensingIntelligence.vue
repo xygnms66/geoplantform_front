@@ -1,16 +1,5 @@
 <template>
   <div class="intelligence-page">
-    <!-- 页面搜索栏 -->
-    <section class="search-only-bar">
-      <div class="global-search">
-        <span class="search-icon">⌕</span>
-        <input
-          v-model="searchKeyword"
-          placeholder="搜索资讯 / 数据集 / 项目 / 任务 / 关键词"
-        />
-      </div>
-    </section>
-
     <main class="page-main">
       <!-- Hero -->
       <section class="hero-card">
@@ -40,6 +29,17 @@
           <div class="radar-dot dot-1"></div>
           <div class="radar-dot dot-2"></div>
           <div class="radar-dot dot-3"></div>
+        </div>
+      </section>
+
+      <!-- 页面搜索栏 -->
+      <section class="search-only-bar">
+        <div class="global-search">
+          <span class="search-icon">⌕</span>
+          <input
+            v-model="searchKeyword"
+            placeholder="搜索资讯 / 数据集 / 项目 / 任务 / 关键词"
+          />
         </div>
       </section>
 
@@ -670,28 +670,23 @@ function statusClass(status) {
 }
 
 .intelligence-page {
-  min-height: 100vh;
-  color: #e5f3ff;
-  background:
-    radial-gradient(circle at 16% 0%, rgba(56, 189, 248, 0.2), transparent 30%),
-    radial-gradient(circle at 88% 12%, rgba(37, 99, 235, 0.18), transparent 30%),
-    linear-gradient(135deg, #020617 0%, #07111f 48%, #020617 100%);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    "PingFang SC",
-    "Microsoft YaHei",
-    sans-serif;
+  color: var(--text);
+  background: transparent;
+  font-family: inherit;
 }
 
 .search-only-bar {
   display: flex;
-  justify-content: center;
-  padding-top: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
 }
 
 .topbar {
@@ -741,7 +736,7 @@ function statusClass(status) {
 .global-search {
   position: relative;
   width: 100%;
-  max-width: 820px;
+  max-width: 760px;
 }
 
 .search-icon {
@@ -756,10 +751,10 @@ function statusClass(status) {
   width: 100%;
   height: 42px;
   padding: 0 16px 0 42px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  color: #dff5ff;
-  background: rgba(15, 23, 42, 0.68);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.055);
   outline: none;
 }
 
@@ -826,9 +821,9 @@ button {
 }
 
 .page-main {
-  width: min(1520px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 30px 0 60px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 64px;
 }
 
 .hero-card,
@@ -842,21 +837,22 @@ button {
 .compact-news-card,
 .report-block,
 .report-section {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.68);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.26);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.74));
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
 }
 
 .hero-card {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 24px;
-  min-height: 230px;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 28px;
+  min-height: 260px;
   overflow: hidden;
-  padding: 30px;
-  border-radius: 30px;
+  align-items: center;
+  padding: 40px;
+  border-radius: 26px;
 }
 
 .hero-card::before {
@@ -881,21 +877,23 @@ button {
   color: #38bdf8;
   font-size: 13px;
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .hero-card h1 {
   margin: 0;
-  font-size: 44px;
-  line-height: 1.1;
+  font-size: clamp(38px, 5.5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
 }
 
 .hero-card p {
-  max-width: 780px;
+  max-width: 820px;
   margin: 14px 0 0;
-  color: #9fb1c7;
-  line-height: 1.8;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 .hero-card b {
@@ -988,9 +986,9 @@ button {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 16px;
-  margin: 20px 0;
+  margin: 20px 0 0;
 }
 
 .stat-card {
@@ -1031,9 +1029,10 @@ button {
 
 .layout-grid {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 360px;
+  grid-template-columns: 190px minmax(0, 1fr) 280px;
   gap: 20px;
   align-items: start;
+  margin-top: 24px;
 }
 
 .filter-panel,
@@ -1044,7 +1043,7 @@ button {
 
 .filter-panel,
 .timeline-panel {
-  border-radius: 24px;
+  border-radius: 22px;
 }
 
 .filter-panel {
@@ -1563,9 +1562,9 @@ button {
 }
 
 .source-status-panel {
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 24px;
+  margin-top: 24px;
+  padding: 22px;
+  border-radius: 22px;
 }
 
 .text-btn {
@@ -1726,13 +1725,9 @@ button:hover {
   transform: translateY(-1px);
 }
 
-@media (max-width: 1320px) {
-  .stats-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
+@media (max-width: 1180px) {
   .layout-grid {
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 190px minmax(0, 1fr);
   }
 
   .insight-panel {
@@ -1743,18 +1738,98 @@ button:hover {
 }
 
 @media (max-width: 960px) {
-  .search-only-bar {
-    width: min(100% - 28px, 1520px);
-    padding: 18px 0 14px;
+  .hero-card {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: 30px;
   }
 
-  .page-main {
-    width: min(100% - 28px, 1520px);
+  .radar-visual {
+    display: none;
+  }
+
+  .search-only-bar {
+    margin-top: 22px;
+  }
+
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-panel {
+    position: static;
+  }
+
+  .insight-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .source-table {
+    overflow-x: auto;
+  }
+
+  .source-row {
+    min-width: 680px;
   }
 }
+
 @media (max-width: 640px) {
-  .stats-grid {
+  .hero-card,
+  .search-only-bar,
+  .filter-panel,
+  .timeline-panel,
+  .insight-card,
+  .source-status-panel {
+    border-radius: 24px;
+  }
+
+  .hero-card,
+  .timeline-panel,
+  .source-status-panel {
+    padding: 24px;
+  }
+
+  .hero-card h1 {
+    font-size: 38px;
+  }
+
+  .hero-card p {
+    font-size: 15px;
+  }
+
+  .search-only-bar {
+    padding: 14px;
+  }
+
+  .global-search input {
+    font-size: 13px;
+  }
+
+  .stats-grid,
+  .card-grid {
     grid-template-columns: 1fr;
+  }
+
+  .timeline-header,
+  .section-header,
+  .featured-top,
+  .compact-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeline-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .timeline-date {
+    position: static;
+    padding-top: 8px;
+  }
+
+  .timeline-items {
+    padding: 0 0 18px 14px;
   }
 
   .news-card {
@@ -1763,12 +1838,13 @@ button:hover {
 
   .news-side {
     grid-column: 2;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .score {
-    width: 80px;
+    grid-column: 1 / -1;
+    height: 50px;
   }
 
   .view-tabs {
@@ -1777,6 +1853,21 @@ button:hover {
 
   .view-tabs button {
     flex: 1;
+  }
+
+  .agent-float {
+    right: 16px;
+    bottom: 16px;
+    height: 44px;
+    padding: 0 14px;
+  }
+
+  .agent-drawer {
+    padding: 18px;
+  }
+
+  .chat-input {
+    grid-template-columns: 1fr;
   }
 }
 </style>
