@@ -107,13 +107,14 @@ async function handleSubmit(e: Event) {
 
 <style scoped>
 .login-container {
-  position: relative;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   overflow: hidden;
+  box-sizing: border-box;
 }
 .login-background {
   position: absolute;
