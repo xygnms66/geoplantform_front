@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { DataFilterGroup, DataSourceCard, DataSourceKey } from "@/types";
+import type { ActiveCatalogFilter, DataFilterGroup, DataSourceCard, DataSourceKey, FilterOption } from "@/types";
 
 defineProps<{
   sources: DataSourceCard[];
   filters: DataFilterGroup[];
   activeSource: DataSourceKey | "all";
-  activeFilters: string[];
+  activeFilters: ActiveCatalogFilter[];
 }>();
 
 const emit = defineEmits<{
-  (e: "toggle-filter", item: string): void;
+  (e: "toggle-filter", groupKey: string, item: FilterOption): void;
   (e: "update:activeSource", source: DataSourceKey | "all"): void;
 }>();
 
@@ -17,8 +17,12 @@ function onSourceChange(source: DataSourceKey | "all") {
   emit("update:activeSource", source);
 }
 
-function onFilterToggle(item: string) {
-  emit("toggle-filter", item);
+function onFilterToggle(groupKey: string, item: FilterOption) {
+  emit("toggle-filter", groupKey, item);
+}
+
+function isFilterActive(groupKey: string, item: FilterOption, activeFilters: ActiveCatalogFilter[]) {
+  return activeFilters.some((active) => active.groupKey === groupKey && active.item.name === item.name);
 }
 </script>
 
@@ -50,17 +54,17 @@ function onFilterToggle(item: string) {
         </button>
       </div>
     </section>
-    <section v-for="group in filters" :key="group.title" class="dc-rail-section">
+    <section v-for="group in filters" :key="group.key" class="dc-rail-section">
       <h2>{{ group.title }}</h2>
       <div class="dc-filter-pills">
         <button
           v-for="item in group.items"
-          :key="item"
+          :key="item.id"
           type="button"
-          :class="['dc-filter-button', { 'dc-filter-button-active': activeFilters.includes(item) }]"
-          @click="onFilterToggle(item)"
+          :class="['dc-filter-button', { 'dc-filter-button-active': isFilterActive(group.key, item, activeFilters) }]"
+          @click="onFilterToggle(group.key, item)"
         >
-          {{ item }}
+          {{ item.name }}
         </button>
       </div>
     </section>

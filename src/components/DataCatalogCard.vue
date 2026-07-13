@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+import { ElTooltip } from "element-plus";
 import type { DataCatalogCard as DataCatalogCardType } from "@/types";
 
 const props = defineProps<{ item: DataCatalogCardType }>();
 const copySuccess = ref(false);
+const descRef = ref<HTMLElement | null>(null);
+const isTruncated = ref(false);
+let resizeObserver: ResizeObserver | null = null;
 
 const statusText: Record<DataCatalogCardType["status"], string> = {
   candidate: "候选数据",
@@ -13,18 +17,51 @@ const statusText: Record<DataCatalogCardType["status"], string> = {
   imported: "已接入",
 };
 
+function updateTruncation() {
+  const el = descRef.value;
+  if (!el) {
+    isTruncated.value = false;
+    return;
+  }
+  isTruncated.value = el.scrollHeight > el.clientHeight + 1;
+}
+
+onMounted(() => {
+  nextTick(() => {
+    updateTruncation();
+    const el = descRef.value;
+    if (!el) return;
+    resizeObserver = new ResizeObserver(() => updateTruncation());
+    resizeObserver.observe(el);
+  });
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+});
+
+watch(
+  () => props.item.description,
+  () => nextTick(updateTruncation),
+);
+
 async function handleCopyPath() {
-  if (props.item.storagePath) {
-    try {
-      await navigator.clipboard.writeText(props.item.storagePath);
-      copySuccess.value = true;
-      setTimeout(() => (copySuccess.value = false), 2000);
-    } catch {}
+  if (!props.item.storagePath) return;
+  try {
+    await navigator.clipboard.writeText(props.item.storagePath);
+    copySuccess.value = true;
+    setTimeout(() => {
+      copySuccess.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error("Failed to copy:", err);
   }
 }
 
 function handleDriveClick() {
-  if (props.item.storagePath) window.open(props.item.storagePath, "_blank");
+  if (props.item.storagePath) {
+    window.open(props.item.storagePath, "_blank");
+  }
 }
 </script>
 
@@ -55,7 +92,15 @@ function handleDriveClick() {
           <span v-else-if="item.beginTime">📅 起始: {{ item.beginTime }}</span>
           <span v-else-if="item.endTime">📅 截止: {{ item.endTime }}</span>
         </div>
-        <p>{{ item.description }}</p>
+        <el-tooltip
+          :content="item.description"
+          placement="top"
+          :show-after="300"
+          :disabled="!isTruncated || !item.description"
+          popper-class="dc-desc-tooltip"
+        >
+          <p ref="descRef" class="dc-description">{{ item.description }}</p>
+        </el-tooltip>
       </div>
     </div>
     <div class="dc-card-footer">
@@ -167,7 +212,7 @@ function handleDriveClick() {
   color: var(--subtle);
   font-size: 12px;
 }
-.dc-dataset-info p {
+.dc-description {
   margin: 7px 0 0;
   color: var(--muted);
   font-size: 12px;
@@ -176,6 +221,7 @@ function handleDriveClick() {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  cursor: default;
 }
 .dc-card-footer {
   display: flex;
@@ -248,5 +294,12 @@ function handleDriveClick() {
 .dc-action-button:hover {
   background: rgba(96, 165, 250, 0.18);
   border-color: rgba(96, 165, 250, 0.5);
+}
+</style>
+
+<style>
+.dc-desc-tooltip {
+  max-width: 320px;
+  line-height: 1.6;
 }
 </style>

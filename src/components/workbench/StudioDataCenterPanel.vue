@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import {
   ElRow,
   ElCol,
@@ -14,18 +14,20 @@ import {
   ElCheckbox,
   ElTag,
   ElText,
+  ElTooltip,
 } from "element-plus";
 import {
-  dataAssets,
   dataInbox,
   dataModalities,
   dataScopes,
-  dataSources,
   dataStats,
   dataStatuses,
   dataStores,
   dataTabs,
 } from "@/lib/workbenchStudioData";
+import { getDataCatalogCards, getDataCenterSources } from "@/lib/dataCenterApi";
+import { dataCatalogCards as dataCatalogFallback, dataSources as dataSourceFallback } from "@/lib/dataCenterStaticData";
+import type { DataCatalogCard as DataCatalogCardType, DataSourceCard, DataSourceKey } from "@/types";
 
 const taskModalOpen = ref(false);
 
@@ -70,23 +72,56 @@ function submitTask() {
 }
 
 const activeTab = ref("数据资产");
-const selectedSource = ref("全部数据");
+const selectedSource = ref<DataSourceKey | "all">("all");
 
-const filteredAssets = computed(() => {
-  if (selectedSource.value === "全部数据") return dataAssets;
-  return dataAssets.filter((asset) => asset.source === selectedSource.value);
+const cards = ref<DataCatalogCardType[]>(dataCatalogFallback);
+const sources = ref<DataSourceCard[]>(dataSourceFallback);
+
+onMounted(async () => {
+  const [catalogCards, dataSources] = await Promise.all([getDataCatalogCards(), getDataCenterSources()]);
+  cards.value = catalogCards;
+  sources.value = dataSources;
 });
 
-function statusClass(status: string) {
-  const map: Record<string, string> = {
-    已入库: "status-success",
-    已发布: "status-success",
-    处理中: "status-running",
-    待质检: "status-warning",
-    待审核: "status-warning",
-    异常: "status-danger",
-  };
-  return map[status] ?? "status-muted";
+const filteredAssets = computed(() => {
+  if (selectedSource.value === "all") return cards.value;
+  return cards.value.filter((card) => card.source === selectedSource.value);
+});
+
+const statusText: Record<DataCatalogCardType["status"], string> = {
+  candidate: "候选数据",
+  planned: "计划接入",
+  available: "已入库",
+  processing: "处理中",
+  imported: "已接入",
+};
+
+function statusClass(status: DataCatalogCardType["status"]) {
+  if (status === "available" || status === "imported") return "status-success";
+  if (status === "processing") return "status-running";
+  if (status === "planned") return "status-warning";
+  return "status-muted";
+}
+
+const copiedId = ref<number | null>(null);
+
+async function handleCopyPath(item: DataCatalogCardType) {
+  if (!item.storagePath) return;
+  try {
+    await navigator.clipboard.writeText(item.storagePath);
+    copiedId.value = item.id;
+    setTimeout(() => {
+      copiedId.value = null;
+    }, 2000);
+  } catch (err) {
+    console.error("Failed to copy:", err);
+  }
+}
+
+function handleDriveClick(item: DataCatalogCardType) {
+  if (item.storagePath) {
+    window.open(item.storagePath, "_blank");
+  }
 }
 </script>
 
@@ -123,13 +158,20 @@ function statusClass(status: string) {
           <div class="filter-group">
             <div class="filter-title">数据来源</div>
             <button
-              v-for="source in dataSources"
-              :key="source"
               type="button"
-              :class="['filter-chip', { active: selectedSource === source }]"
-              @click="selectedSource = source"
+              :class="['filter-chip', { active: selectedSource === 'all' }]"
+              @click="selectedSource = 'all'"
             >
-              {{ source }}
+              全部数据
+            </button>
+            <button
+              v-for="source in sources"
+              :key="source.key"
+              type="button"
+              :class="['filter-chip', { active: selectedSource === source.key }]"
+              @click="selectedSource = source.key"
+            >
+              {{ source.icon }} {{ source.name }}
             </button>
           </div>
           <div class="filter-group">
@@ -177,42 +219,82 @@ function statusClass(status: string) {
             </div>
 
             <div class="asset-grid">
-              <article v-for="asset in filteredAssets" :key="asset.name" class="asset-card">
+              <article v-for="asset in filteredAssets" :key="asset.id" class="asset-card">
                 <div class="asset-top">
-                  <div class="asset-cube">DS</div>
+                  <div class="asset-cube">🧊</div>
                   <div class="asset-title-block">
-                    <div class="asset-title">{{ asset.name }}</div>
-                    <div class="asset-subtitle">{{ asset.source }} / {{ asset.size }} / {{ asset.count }}</div>
+                    <div class="asset-title">{{ asset.title }}</div>
+                    <div class="asset-subtitle">
+                      {{ asset.sourceName }} / {{ asset.size ?? "未知" }} / {{ asset.samples ?? "未知" }}
+                    </div>
                   </div>
-                  <span class="status-pill" :class="statusClass(asset.status)">{{ asset.status }}</span>
+                  <span class="status-pill" :class="statusClass(asset.status)">{{ statusText[asset.status] }}</span>
                 </div>
 
-                <p class="asset-desc">{{ asset.desc }}</p>
+                <el-tooltip
+                  :content="asset.description"
+                  placement="top"
+                  :show-after="300"
+                  :disabled="!asset.description"
+                  popper-class="dc-desc-tooltip"
+                >
+                  <p class="asset-desc">{{ asset.description }}</p>
+                </el-tooltip>
 
                 <div class="meta-grid">
                   <div>
-                    <span>空间范围</span><b>{{ asset.region }}</b>
+                    <span>空间范围</span><b>{{ asset.region ?? "未知" }}</b>
                   </div>
                   <div>
-                    <span>时间范围</span><b>{{ asset.time }}</b>
+                    <span>时间范围</span>
+                    <b v-if="asset.beginTime && asset.endTime">{{ asset.beginTime }} ~ {{ asset.endTime }}</b>
+                    <b v-else-if="asset.beginTime">{{ asset.beginTime }} 起</b>
+                    <b v-else-if="asset.endTime">至 {{ asset.endTime }}</b>
+                    <b v-else>未知</b>
                   </div>
                   <div>
-                    <span>分辨率</span><b>{{ asset.resolution }}</b>
+                    <span>分辨率</span><b>{{ asset.resolution ?? "未知" }}</b>
                   </div>
                   <div>
-                    <span>Owner</span><b>{{ asset.owner }}</b>
+                    <span>许可</span><b>{{ asset.license ?? "未知" }}</b>
                   </div>
                 </div>
 
                 <div class="tag-line">
-                  <span v-for="tag in asset.tags" :key="tag" class="tag">{{ tag }}</span>
+                  <span class="tag">{{ asset.domain }}</span>
+                  <span v-if="asset.format" class="tag">{{ asset.format }}</span>
+                  <span v-for="tag in asset.modality" :key="tag" class="tag">{{ tag }}</span>
                 </div>
 
-                <div class="storage-path">{{ asset.path }}</div>
+                <div v-if="asset.storagePath" class="storage-path">{{ asset.storagePath }}</div>
 
                 <div class="asset-actions">
                   <button class="small-btn">详情</button>
-                  <button class="small-btn">复制路径</button>
+                  <button
+                    v-if="asset.storageStatus === 'local' && asset.storagePath"
+                    class="small-btn"
+                    type="button"
+                    @click="handleCopyPath(asset)"
+                  >
+                    {{ copiedId === asset.id ? "✓ 已复制" : "📋 复制路径" }}
+                  </button>
+                  <button
+                    v-else-if="asset.storageStatus === 'drive' && asset.storagePath"
+                    class="small-btn"
+                    type="button"
+                    @click="handleDriveClick(asset)"
+                  >
+                    🌐 打开网页
+                  </button>
+                  <a
+                    v-else-if="asset.url"
+                    class="small-btn"
+                    :href="asset.url"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    查看链接
+                  </a>
                   <button class="small-btn">触发处理</button>
                   <button class="ghost-mini">血缘</button>
                 </div>
@@ -579,6 +661,12 @@ function statusClass(status: string) {
   background: rgba(56, 189, 248, 0.14);
 }
 
+a.small-btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .ghost-mini {
   color: #cfe8ff;
   background: rgba(121, 167, 255, 0.14);
@@ -807,6 +895,11 @@ function statusClass(status: string) {
   margin: 16px 0;
   line-height: 1.7;
   font-size: 14px;
+  cursor: default;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .meta-grid {
@@ -1161,5 +1254,12 @@ function statusClass(status: string) {
 
 .dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .radio-icon {
   opacity: 1;
+}
+</style>
+
+<style>
+.dc-desc-tooltip {
+  max-width: 320px;
+  line-height: 1.6;
 }
 </style>

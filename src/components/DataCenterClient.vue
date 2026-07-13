@@ -1,38 +1,53 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import type { DataCatalogCard as DataCatalogCardType, DataFilterGroup, DataSourceCard, DataSourceKey } from "@/types";
-import { useAuthStore } from "@/stores/auth";
+import { computed, onMounted, ref, watch } from "vue";
+import type {
+  ActiveCatalogFilter,
+  DataCatalogCard as DataCatalogCardType,
+  DataCatalogFilter,
+  DataFilterGroup,
+  DataSourceCard,
+  DataSourceKey,
+  FilterOption,
+} from "@/types";
+import { fetchDataCatalogCards } from "@/lib/dataCenterApi";
+import { dataCatalogCards as dataCatalogFallback } from "@/lib/dataCenterStaticData";
 import DataSourceRail from "./DataSourceRail.vue";
 import DataCatalogCard from "./DataCatalogCard.vue";
 
 const props = defineProps<{
   sources: DataSourceCard[];
   filters: DataFilterGroup[];
-  cards: DataCatalogCardType[];
 }>();
 
-const auth = useAuthStore();
+const cards = ref<DataCatalogCardType[]>(dataCatalogFallback);
 const activeSource = ref<DataSourceKey | "all">("all");
-const activeFilters = ref<string[]>([]);
+const activeFilters = ref<ActiveCatalogFilter[]>([]);
 
-function cardMatchesFilter(card: DataCatalogCardType, filter: string) {
-  return (
-    card.scope.includes(filter) ||
-    card.modality.includes(filter) ||
-    card.projects.includes(filter) ||
-    card.suitableModels.includes(filter) ||
-    card.domain === filter
-  );
+function buildCatalogFilter(): DataCatalogFilter {
+  const filter: DataCatalogFilter = {};
+
+  if (activeSource.value !== "all") {
+    filter.source = activeSource.value;
+  }
+
+  const scopes = activeFilters.value.filter((item) => item.groupKey === "scope").map((item) => item.item.name);
+  const modalities = activeFilters.value
+    .filter((item) => item.groupKey === "modality")
+    .map((item) => item.item.name);
+  const statuses = activeFilters.value
+    .filter((item) => item.groupKey === "status")
+    .map((item) => item.item.value);
+
+  if (scopes.length > 0) filter.scopes = scopes;
+  if (modalities.length > 0) filter.modalities = modalities;
+  if (statuses.length > 0) filter.statuses = statuses;
+
+  return filter;
 }
 
-const visibleCards = computed(() => {
-  return props.cards.filter((card) => {
-    const sourceOk = activeSource.value === "all" || card.source === activeSource.value;
-    const filterOk =
-      activeFilters.value.length === 0 || activeFilters.value.every((item) => cardMatchesFilter(card, item));
-    return sourceOk && filterOk;
-  });
-});
+async function loadCards() {
+  cards.value = await fetchDataCatalogCards(buildCatalogFilter());
+}
 
 const activeSourceName = computed(() =>
   activeSource.value === "all"
@@ -40,16 +55,21 @@ const activeSourceName = computed(() =>
     : props.sources.find((item) => item.key === activeSource.value)?.name || "全部来源",
 );
 
-function toggleFilter(item: string) {
-  const idx = activeFilters.value.indexOf(item);
+function toggleFilter(groupKey: string, item: FilterOption) {
+  const idx = activeFilters.value.findIndex(
+    (active) => active.groupKey === groupKey && active.item.name === item.name,
+  );
   if (idx >= 0) activeFilters.value.splice(idx, 1);
-  else activeFilters.value.push(item);
+  else activeFilters.value.push({ groupKey, item });
 }
 
 function clearFilters() {
   activeSource.value = "all";
   activeFilters.value = [];
 }
+
+onMounted(loadCards);
+watch([activeSource, activeFilters], loadCards, { deep: true });
 </script>
 
 <template>
@@ -61,7 +81,6 @@ function clearFilters() {
         :activeSource="activeSource"
         :activeFilters="activeFilters"
         @update:activeSource="activeSource = $event"
-        @update:activeFilters="activeFilters = $event"
         @toggle-filter="toggleFilter"
         @clear-filters="clearFilters"
       />
@@ -71,7 +90,7 @@ function clearFilters() {
         </div>
         <div class="dc-result-header">
           <p class="dc-count-line">
-            <strong>{{ visibleCards.length }}</strong> 个数据集 · {{ activeSourceName }}
+            <strong>{{ cards.length }}</strong> 个数据集 · {{ activeSourceName }}
           </p>
           <button
             v-if="activeSource !== 'all' || activeFilters.length > 0"
@@ -83,16 +102,21 @@ function clearFilters() {
           </button>
         </div>
         <div v-if="activeFilters.length > 0" class="dc-active-filter-row">
-          <button v-for="item in activeFilters" :key="item" type="button" @click="toggleFilter(item)">
-            {{ item }} ×
+          <button
+            v-for="item in activeFilters"
+            :key="`${item.groupKey}:${item.item.id}`"
+            type="button"
+            @click="toggleFilter(item.groupKey, item.item)"
+          >
+            {{ item.item.name }} ×
           </button>
         </div>
-        <div v-if="visibleCards.length > 0" class="dc-dataset-grid">
-          <DataCatalogCard v-for="item in visibleCards" :key="item.id" :item="item" />
+        <div v-if="cards.length > 0" class="dc-dataset-grid">
+          <DataCatalogCard v-for="item in cards" :key="item.id" :item="item" />
         </div>
         <div v-else class="dc-empty-state">
           <strong>当前筛选条件下暂无数据集</strong>
-          <p>可以切换左侧数据来源，或取消部分适用范围、模态、项目关联筛选。</p>
+          <p>可以切换左侧数据来源，或取消部分适用范围、模态、状态筛选。</p>
           <button type="button" @click="clearFilters">查看全部数据</button>
         </div>
       </section>

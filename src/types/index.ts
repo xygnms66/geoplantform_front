@@ -145,7 +145,7 @@ export type PipelineOutput = {
   status: string;
 };
 
-export type DataSourceKey = "huggingface" | "haina" | "georemote" | "internal";
+export type DataSourceKey = "huggingface" | "haina" | "georemote" | "internal" | "paper";
 export type DataStatus = "candidate" | "planned" | "available" | "processing" | "imported";
 
 export type DataSourceCard = {
@@ -155,9 +155,33 @@ export type DataSourceCard = {
   icon: string;
 };
 
+export type FilterOption = {
+  id: number;
+  name: string;
+  value: string;
+};
+
 export type DataFilterGroup = {
   title: string;
-  items: string[];
+  key: string;
+  items: FilterOption[];
+};
+
+export type DataCatalogFilter = {
+  keyword?: string | null;
+  source?: string | null;
+  sourceId?: number | null;
+  scopes?: string[];
+  scopeIds?: number[];
+  modalities?: string[];
+  modalityIds?: number[];
+  statuses?: string[];
+  statusIds?: number[];
+};
+
+export type ActiveCatalogFilter = {
+  groupKey: string;
+  item: FilterOption;
 };
 
 export type StorageStatus = "local" | "drive";
