@@ -214,6 +214,54 @@ export type DataCatalogCard = {
   url?: string;
 };
 
+export type DataProductCreate = {
+  name: string;
+  source_id?: number | null;
+  provider?: string | null;
+  platform?: string | null;
+  sensor?: string | null;
+  product_level?: string | null;
+  description?: string | null;
+  license?: number;
+  resolution_value?: number | null;
+  resolution_unit?: "cm" | "m" | "km";
+  format?: string;
+  scope_ids?: number[];
+  modality_ids?: number[];
+};
+
+export type DataProduct = {
+  id: number;
+  name: string;
+  source_id?: number | null;
+  provider?: string | null;
+  platform?: string | null;
+  sensor?: string | null;
+  product_level?: string | null;
+  description?: string | null;
+  license: number;
+  license_name?: string | null;
+  resolution_value?: number | null;
+  resolution_unit?: string | null;
+  format?: string | null;
+  scope_ids: number[];
+  modality_ids: number[];
+};
+
+export type DatasetCreate = {
+  display_name: string;
+  product_id?: number | null;
+  region?: string | null;
+  time_start?: string | null;
+  time_end?: string | null;
+  sample_count?: number | null;
+  status?: number;
+  storage_location_type?: number;
+  storage_path?: string | null;
+  source_url?: string | null;
+  agent_summary?: string | null;
+};
+
 export type PipelineMiniCard = {
   id: number;
   projectSlug: string;

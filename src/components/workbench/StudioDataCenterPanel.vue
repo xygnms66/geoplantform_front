@@ -1,92 +1,107 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { ElTooltip } from "element-plus";
+import DataProductFormDialog from "@/components/workbench/DataProductFormDialog.vue";
+import DatasetFormDialog from "@/components/workbench/DatasetFormDialog.vue";
+import { dataInbox, dataStats, dataStores, dataTabs } from "@/lib/workbenchStudioData";
 import {
-  ElRow,
-  ElCol,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElDatePicker,
-  ElRadioGroup,
-  ElRadioButton,
-  ElCheckbox,
-  ElTag,
-  ElText,
-  ElTooltip,
-} from "element-plus";
-import {
-  dataInbox,
-  dataModalities,
-  dataScopes,
-  dataStats,
-  dataStatuses,
-  dataStores,
-  dataTabs,
-} from "@/lib/workbenchStudioData";
-import { getDataCatalogCards, getDataCenterSources } from "@/lib/dataCenterApi";
+  FILTER_FALLBACK,
+  fetchDataCatalogCards,
+  getDataCenterFilters,
+  getDataCenterSources,
+} from "@/lib/dataCenterApi";
 import { dataCatalogCards as dataCatalogFallback, dataSources as dataSourceFallback } from "@/lib/dataCenterStaticData";
-import type { DataCatalogCard as DataCatalogCardType, DataSourceCard, DataSourceKey } from "@/types";
+import type {
+  ActiveCatalogFilter,
+  DataCatalogCard as DataCatalogCardType,
+  DataCatalogFilter,
+  DataFilterGroup,
+  DataSourceCard,
+  DataSourceKey,
+  FilterOption,
+} from "@/types";
 
-const taskModalOpen = ref(false);
+const productFormDialogRef = ref<InstanceType<typeof DataProductFormDialog> | null>(null);
+const datasetFormDialogRef = ref<InstanceType<typeof DatasetFormDialog> | null>(null);
 
-const licenseOptions = ["Internal", "Public", "Restricted"];
-const formatOptions = [
-  "GeoTIFF",
-  "COG",
-  "TIFF / TIF",
-  "GRIB",
-  "Shapefile / SHP",
-  "GeoJSON",
-  "CSV",
-  "Parquet",
-  "GeoParquet",
-  "JSON / JSONL",
-];
-const domainOptions = ["预训练", "变化检测", "目标检测", "热风险", "全景分割"];
-const modalityOptions = ["光学", "多光谱", "SAR", "DEM", "LST", "土地覆盖", "矢量"];
-const resolutionUnitOptions = ["m/pixel", "cm/pixel", "km/pixel"];
+function openProductModal() {
+  productFormDialogRef.value?.openCreateDialog();
+}
 
-const form = ref({
-  name: "",
-  source: "",
-  description: "",
-  region: "",
-  samples: "",
-  begin_time: "",
-  end_time: "",
-  resolution: "",
-  resolution_unit: "m/pixel",
-  license: [] as string[],
-  format: [] as string[],
-  domain: [] as string[],
-  modality: "",
-  storage_status: "",
-  storage_path: "",
-});
+function openDatasetModal() {
+  datasetFormDialogRef.value?.openCreateDialog();
+}
 
-function submitTask() {
-  console.log("注册数据集提交:", JSON.parse(JSON.stringify(form.value)));
-  taskModalOpen.value = false;
+async function handleProductSaved() {
+  await loadCards();
+}
+
+async function handleDatasetSaved() {
+  await loadCards();
 }
 
 const activeTab = ref("数据资产");
-const selectedSource = ref<DataSourceKey | "all">("all");
+const activeSource = ref<DataSourceKey | "all">("all");
+const activeFilters = ref<ActiveCatalogFilter[]>([]);
 
 const cards = ref<DataCatalogCardType[]>(dataCatalogFallback);
 const sources = ref<DataSourceCard[]>(dataSourceFallback);
+const filters = ref<DataFilterGroup[]>(FILTER_FALLBACK);
+
+function buildCatalogFilter(): DataCatalogFilter {
+  const filter: DataCatalogFilter = {};
+
+  if (activeSource.value !== "all") {
+    filter.source = activeSource.value;
+  }
+
+  const scopes = activeFilters.value.filter((item) => item.groupKey === "scope").map((item) => item.item.name);
+  const modalities = activeFilters.value
+    .filter((item) => item.groupKey === "modality")
+    .map((item) => item.item.name);
+  const statuses = activeFilters.value
+    .filter((item) => item.groupKey === "status")
+    .map((item) => item.item.value);
+
+  if (scopes.length > 0) filter.scopes = scopes;
+  if (modalities.length > 0) filter.modalities = modalities;
+  if (statuses.length > 0) filter.statuses = statuses;
+
+  return filter;
+}
+
+async function loadCards() {
+  cards.value = await fetchDataCatalogCards(buildCatalogFilter());
+}
+
+function toggleFilter(groupKey: string, item: FilterOption) {
+  const idx = activeFilters.value.findIndex(
+    (active) => active.groupKey === groupKey && active.item.name === item.name,
+  );
+  if (idx >= 0) activeFilters.value.splice(idx, 1);
+  else activeFilters.value.push({ groupKey, item });
+}
+
+function isFilterActive(groupKey: string, item: FilterOption) {
+  return activeFilters.value.some((active) => active.groupKey === groupKey && active.item.name === item.name);
+}
+
+function clearFilters() {
+  activeSource.value = "all";
+  activeFilters.value = [];
+}
 
 onMounted(async () => {
-  const [catalogCards, dataSources] = await Promise.all([getDataCatalogCards(), getDataCenterSources()]);
-  cards.value = catalogCards;
+  const [dataSources, filterGroups] = await Promise.all([
+    getDataCenterSources(),
+    getDataCenterFilters(),
+  ]);
   sources.value = dataSources;
+  filters.value = filterGroups;
+  await loadCards();
 });
 
-const filteredAssets = computed(() => {
-  if (selectedSource.value === "all") return cards.value;
-  return cards.value.filter((card) => card.source === selectedSource.value);
-});
+watch([activeSource, activeFilters], loadCards, { deep: true });
 
 const statusText: Record<DataCatalogCardType["status"], string> = {
   candidate: "候选数据",
@@ -133,8 +148,8 @@ function handleDriveClick(item: DataCatalogCardType) {
         <div class="page-subtitle">统一管理遥感数据资产、对象存储、入库审核和数据处理状态。</div>
       </div>
       <div class="action-row">
-        <button class="primary-btn" @click="taskModalOpen = true">+ 注册数据集</button>
-        <button class="secondary-btn">连接对象存储</button>
+        <button class="primary-btn" type="button" @click="openProductModal">+ 新建数据产品</button>
+        <button class="secondary-btn" type="button" @click="openDatasetModal">+ 新建数据集</button>
         <button class="secondary-btn">批量扫描</button>
       </div>
     </section>
@@ -159,8 +174,8 @@ function handleDriveClick(item: DataCatalogCardType) {
             <div class="filter-title">数据来源</div>
             <button
               type="button"
-              :class="['filter-chip', { active: selectedSource === 'all' }]"
-              @click="selectedSource = 'all'"
+              :class="['filter-chip', { active: activeSource === 'all' }]"
+              @click="activeSource = 'all'"
             >
               全部数据
             </button>
@@ -168,30 +183,32 @@ function handleDriveClick(item: DataCatalogCardType) {
               v-for="source in sources"
               :key="source.key"
               type="button"
-              :class="['filter-chip', { active: selectedSource === source.key }]"
-              @click="selectedSource = source.key"
+              :class="['filter-chip', { active: activeSource === source.key }]"
+              @click="activeSource = source.key"
             >
               {{ source.icon }} {{ source.name }}
             </button>
           </div>
-          <div class="filter-group">
-            <div class="filter-title">应用范围</div>
-            <button v-for="scope in dataScopes" :key="scope" type="button" class="filter-chip small">
-              {{ scope }}
+          <div v-for="group in filters" :key="group.key" class="filter-group">
+            <div class="filter-title">{{ group.title }}</div>
+            <button
+              v-for="item in group.items"
+              :key="item.id"
+              type="button"
+              :class="['filter-chip', 'small', { active: isFilterActive(group.key, item) }]"
+              @click="toggleFilter(group.key, item)"
+            >
+              {{ item.name }}
             </button>
           </div>
-          <div class="filter-group">
-            <div class="filter-title">模态</div>
-            <button v-for="modality in dataModalities" :key="modality" type="button" class="filter-chip small">
-              {{ modality }}
-            </button>
-          </div>
-          <div class="filter-group">
-            <div class="filter-title">状态</div>
-            <button v-for="status in dataStatuses" :key="status" type="button" class="filter-chip small">
-              {{ status }}
-            </button>
-          </div>
+          <button
+            v-if="activeSource !== 'all' || activeFilters.length > 0"
+            type="button"
+            class="filter-clear-btn"
+            @click="clearFilters"
+          >
+            清空筛选
+          </button>
         </div>
       </aside>
 
@@ -219,7 +236,7 @@ function handleDriveClick(item: DataCatalogCardType) {
             </div>
 
             <div class="asset-grid">
-              <article v-for="asset in filteredAssets" :key="asset.id" class="asset-card">
+              <article v-for="asset in cards" :key="asset.id" class="asset-card">
                 <div class="asset-top">
                   <div class="asset-cube">🧊</div>
                   <div class="asset-title-block">
@@ -355,225 +372,9 @@ function handleDriveClick(item: DataCatalogCardType) {
         </section>
       </section>
     </section>
-    <div v-if="taskModalOpen" class="modal-mask" @click.self="taskModalOpen = false">
-      <div class="modal-panel">
-        <div class="modal-header">
-          <div>
-            <h2 class="modal-title">注册数据集</h2>
-            <p class="modal-desc">注册一个新的数据集，填写以下信息后提交。</p>
-          </div>
-          <button type="button" class="modal-close" @click="taskModalOpen = false">✕</button>
-        </div>
 
-        <div class="modal-body">
-          <el-form label-position="top" size="default" class="dark-form">
-            <el-row :gutter="16">
-              <el-col :span="12">
-                <el-form-item label="名称">
-                  <el-input v-model="form.name" placeholder="例如：Landsat 8/9 L2" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="来源">
-                  <el-input v-model="form.source" placeholder="例如：georemote" clearable />
-                </el-form-item>
-              </el-col>
-            </el-row>
-
-            <el-form-item label="描述">
-              <el-input v-model="form.description" type="textarea" :rows="3" placeholder="数据描述信息" />
-            </el-form-item>
-
-            <el-row :gutter="16">
-              <el-col :span="12">
-                <el-form-item label="区域">
-                  <el-input v-model="form.region" placeholder="例如：浙江省" clearable />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="样本量">
-                  <el-input v-model="form.samples" placeholder="例如：12万" clearable />
-                </el-form-item>
-              </el-col>
-            </el-row>
-
-            <el-row :gutter="16">
-              <el-col :span="12">
-                <el-form-item label="开始时间">
-                  <el-date-picker
-                    v-model="form.begin_time"
-                    type="date"
-                    placeholder="选择日期"
-                    value-format="YYYY-MM-DD"
-                    style="width: 100%"
-                    popper-class="dark-popper"
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="结束时间">
-                  <el-date-picker
-                    v-model="form.end_time"
-                    type="date"
-                    placeholder="选择日期"
-                    value-format="YYYY-MM-DD"
-                    style="width: 100%"
-                    popper-class="dark-popper"
-                  />
-                </el-form-item>
-              </el-col>
-            </el-row>
-
-            <el-row :gutter="16">
-              <el-col :span="8">
-                <el-form-item label="分辨率">
-                  <div style="display: flex; gap: 0; width: 100%">
-                    <el-input
-                      v-model="form.resolution"
-                      placeholder="数值"
-                      style="flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0"
-                    />
-                    <el-select v-model="form.resolution_unit" style="width: 110px" popper-class="dark-popper">
-                      <el-option v-for="u in resolutionUnitOptions" :key="u" :label="u" :value="u" />
-                    </el-select>
-                  </div>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="许可">
-                  <el-select
-                    v-model="form.license"
-                    multiple
-                    filterable
-                    allow-create
-                    default-first-option
-                    :reserve-keyword="false"
-                    clearable
-                    placeholder="请选择或输入许可"
-                    collapse-tags
-                    collapse-tags-tooltip
-                    style="width: 100%"
-                    popper-class="dark-popper"
-                  >
-                    <el-option v-for="opt in licenseOptions" :key="opt" :label="opt" :value="opt" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="格式">
-                  <el-select
-                    v-model="form.format"
-                    multiple
-                    filterable
-                    allow-create
-                    default-first-option
-                    :reserve-keyword="false"
-                    clearable
-                    placeholder="请选择或输入格式"
-                    collapse-tags
-                    collapse-tags-tooltip
-                    style="width: 100%"
-                    popper-class="dark-popper"
-                  >
-                    <el-option v-for="opt in formatOptions" :key="opt" :label="opt" :value="opt" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-
-            <el-form-item label="应用范围（可多选）">
-              <el-select
-                v-model="form.domain"
-                multiple
-                filterable
-                allow-create
-                default-first-option
-                :reserve-keyword="false"
-                placeholder="请选择应用范围或直接输入"
-                collapse-tags
-                collapse-tags-tooltip
-                :max-collapse-tags="5"
-                style="width: 100%"
-                popper-class="dark-popper"
-                clearable
-              >
-                <el-option v-for="item in domainOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="模态">
-              <el-select
-                v-model="form.modality"
-                filterable
-                allow-create
-                default-first-option
-                :reserve-keyword="false"
-                placeholder="请选择模态"
-                style="width: 100%"
-                popper-class="dark-popper"
-                clearable
-              >
-                <el-option v-for="item in modalityOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="存储状态">
-              <el-radio-group v-model="form.storage_status" class="storage-toggle">
-                <el-radio-button value="local">
-                  <svg
-                    class="radio-icon"
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                  </svg>
-                  本地存储
-                </el-radio-button>
-                <el-radio-button value="web">
-                  <svg
-                    class="radio-icon"
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="2" y1="12" x2="22" y2="12" />
-                    <path
-                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                    />
-                  </svg>
-                  网站链接
-                </el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-
-            <el-form-item v-if="form.storage_status" :label="form.storage_status === 'local' ? '存储路径' : '网站地址'">
-              <el-input
-                v-model="form.storage_path"
-                :placeholder="form.storage_status === 'local' ? '/mnt_llm_A100_V1/datasets/...' : 'https://...'"
-                clearable
-              />
-            </el-form-item>
-          </el-form>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="secondary-btn" @click="taskModalOpen = false">取消</button>
-          <button type="button" class="primary-btn" @click="submitTask">提交</button>
-        </div>
-      </div>
-    </div>
+    <DataProductFormDialog ref="productFormDialogRef" @saved="handleProductSaved" />
+    <DatasetFormDialog ref="datasetFormDialogRef" @saved="handleDatasetSaved" />
   </main>
 </template>
 
@@ -795,6 +596,20 @@ a.small-btn {
   border-radius: 999px;
 }
 
+.filter-clear-btn {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 8px;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 12px;
+  color: #67e8f9;
+  background: rgba(59, 130, 246, 0.12);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .data-main {
   display: flex;
   flex-direction: column;
@@ -970,11 +785,6 @@ a.small-btn {
   background: rgba(245, 158, 11, 0.16);
 }
 
-.status-danger {
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.16);
-}
-
 .status-muted {
   color: #cbd5e1;
   background: rgba(100, 116, 139, 0.18);
@@ -1113,147 +923,6 @@ a.small-btn {
     flex-direction: column;
     align-items: flex-start;
   }
-}
-
-.modal-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 60px 24px;
-  background: rgba(2, 6, 23, 0.7);
-  backdrop-filter: blur(6px);
-  overflow-y: auto;
-}
-
-.modal-panel {
-  width: 100%;
-  max-width: 720px;
-  border-radius: 28px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: linear-gradient(180deg, rgba(11, 20, 38, 0.98), rgba(7, 14, 28, 0.98));
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(14px);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 24px 28px 0;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 900;
-}
-
-.modal-desc {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #94a3b8;
-  cursor: pointer;
-  transition: 0.18s ease;
-  flex-shrink: 0;
-}
-
-.modal-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 24px 28px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 0 28px 24px;
-}
-
-.modal-footer .primary-btn,
-.modal-footer .secondary-btn {
-  height: 44px;
-  padding: 0 24px;
-  font-size: 14px;
-}
-
-.dark-form .el-radio-group.storage-toggle {
-  display: flex;
-  gap: 12px;
-}
-
-.dark-form .el-radio-group.storage-toggle .el-radio-button__inner {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 24px !important;
-  min-width: 120px;
-  justify-content: center;
-  font-size: 14px;
-  letter-spacing: 0.02em;
-  transition: all 0.25s ease;
-  border: 1px solid rgba(121, 167, 255, 0.2) !important;
-  background: rgba(2, 8, 21, 0.3) !important;
-  border-radius: 999px !important;
-  color: #c7e9ff !important;
-  font-weight: 700;
-}
-
-.dark-form .el-radio-group.storage-toggle .el-radio-button:not(.is-active) .el-radio-button__inner:hover {
-  background: rgba(59, 130, 246, 0.12) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  transform: translateY(-1px);
-}
-
-.dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .el-radio-button__inner {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.15)) !important;
-  border-color: #3b82f6 !important;
-  box-shadow:
-    0 0 24px rgba(59, 130, 246, 0.18),
-    0 0 0 1px rgba(59, 130, 246, 0.35) !important;
-  --el-radio-button-checked-bg-color: transparent;
-  --el-radio-button-checked-border-color: #3b82f6;
-  --el-radio-button-checked-text-color: #fff;
-}
-
-.dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon {
-  color: #4ade80 !important;
-}
-.dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon svg {
-  stroke: #4ade80 !important;
-  fill: none !important;
-  filter: drop-shadow(0 0 4px rgba(74, 222, 128, 0.5));
-}
-
-.dark-form .el-radio-group.storage-toggle .radio-icon {
-  opacity: 0.7;
-  flex-shrink: 0;
-}
-
-.dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .radio-icon {
-  opacity: 1;
 }
 </style>
 

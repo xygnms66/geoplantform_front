@@ -2,7 +2,11 @@ import type {
   DataCatalogCard,
   DataCatalogFilter,
   DataFilterGroup,
+  DataProduct,
+  DataProductCreate,
+  DatasetCreate,
   DataSourceCard,
+  FilterOption,
 } from "@/types";
 import { dataCatalogCards, dataSources } from "./dataCenterStaticData";
 
@@ -49,6 +53,42 @@ export const FILTER_FALLBACK: DataFilterGroup[] = [
 
 type DataCatalogFiltersResponse = {
   groups?: DataFilterGroup[];
+  sources?: DataProductFormSource[];
+};
+
+export type DataProductFormSource = {
+  id: number;
+  key: string;
+  name: string;
+  subtitle?: string | null;
+  icon?: string | null;
+};
+
+export type LicenseOption = {
+  id: number;
+  name: string;
+  label: string;
+};
+
+export type ProductFormFilterOption = FilterOption & {
+  description?: string | null;
+};
+
+export type DataProductFormOptions = {
+  sources: DataProductFormSource[];
+  scopes: ProductFormFilterOption[];
+  modalities: ProductFormFilterOption[];
+  productLevels: string[];
+  resolutionUnits: string[];
+  formats: string[];
+  licenses: LicenseOption[];
+};
+
+export type DataProductDetail = DataProduct & {
+  scopes?: Array<{ id: number; name: string; description?: string | null }>;
+  modalities?: Array<{ id: number; name: string; description?: string | null }>;
+  scope_links?: Array<{ scope_id: number }>;
+  modality_links?: Array<{ modality_id: number }>;
 };
 
 export function hasActiveCatalogFilters(filter: DataCatalogFilter): boolean {
@@ -152,4 +192,155 @@ export async function fetchDataCatalogCards(filter?: DataCatalogFilter): Promise
     return getDataCatalogCards();
   }
   return searchDataCatalogCards(filter);
+}
+
+async function fetchJsonOrThrow<T>(path: string, init?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const headers = new Headers(init?.headers);
+  if (init?.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    cache: "no-store",
+    signal: controller.signal,
+    ...init,
+    headers,
+  });
+  clearTimeout(timeout);
+
+  if (!response.ok) {
+    let message = `Request failed: ${response.status}`;
+    try {
+      const errorBody = await response.json();
+      if (typeof errorBody?.detail === "string") message = errorBody.detail;
+      else if (Array.isArray(errorBody?.detail)) {
+        message = errorBody.detail.map((item: { msg?: string }) => item.msg).filter(Boolean).join("; ");
+      }
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(message);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
+
+async function postJsonOrThrow<T>(path: string, body: unknown): Promise<T> {
+  return fetchJsonOrThrow<T>(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function getDataProducts(): Promise<DataProduct[]> {
+  return fetchJson<DataProduct[]>("/data-products", []);
+}
+
+export function createDataProduct(payload: DataProductCreate): Promise<DataProduct> {
+  return postJsonOrThrow<DataProduct>("/data-products", payload);
+}
+
+export function getDataProduct(productId: number): Promise<DataProductDetail> {
+  return fetchJsonOrThrow<DataProductDetail>(`/data-products/${productId}`);
+}
+
+export function updateDataProduct(productId: number, payload: DataProductCreate): Promise<DataProduct> {
+  return fetchJsonOrThrow<DataProduct>(`/data-products/${productId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+const FALLBACK_FORM_SOURCES: DataProductFormSource[] = [
+  { id: 1, key: "huggingface", name: "Hugging Face", subtitle: "社区开源数据", icon: "🤗" },
+  { id: 2, key: "haina", name: "海纳数据枢纽", subtitle: "平台候选数据", icon: "🌊" },
+  { id: 3, key: "georemote", name: "GeoRemote", subtitle: "遥感自有数据", icon: "🗄️" },
+  { id: 4, key: "paper", name: "论文开源数据", subtitle: "学术论文附带数据", icon: "📄" },
+  { id: 5, key: "gee", name: "GEE 数据集", subtitle: "Google Earth Engine 公开数据产品", icon: "🛰️" },
+];
+
+const FALLBACK_PRODUCT_LEVELS = ["L0", "L1", "L1A", "L1B", "L1C", "L2", "L2A", "L3", "L4"];
+
+const FALLBACK_RESOLUTION_UNITS = ["cm", "m", "km"];
+
+const FALLBACK_FORMATS = [
+  "GeoTIFF",
+  "COG",
+  "TIFF",
+  "GRIB",
+  "Shapefile",
+  "GeoJSON",
+  "CSV",
+  "Parquet",
+  "GeoParquet",
+  "JSON",
+  "JSONL",
+];
+
+const FALLBACK_LICENSES: LicenseOption[] = [
+  { id: 1, name: "Internal", label: "内部已有数据资产" },
+  { id: 2, name: "Public", label: "外部公开数据集" },
+  { id: 3, name: "Restricted", label: "受项目或客户授权限制的数据" },
+];
+
+type DataProductFormOptionsResponse = {
+  sources?: DataProductFormSource[];
+  scopes?: ProductFormFilterOption[];
+  modalities?: ProductFormFilterOption[];
+  product_levels?: string[];
+  resolution_units?: string[];
+  formats?: string[];
+  licenses?: LicenseOption[];
+};
+
+function buildFallbackFormOptions(): DataProductFormOptions {
+  return {
+    sources: FALLBACK_FORM_SOURCES,
+    scopes: FILTER_FALLBACK.find((group) => group.key === "scope")?.items ?? [],
+    modalities: FILTER_FALLBACK.find((group) => group.key === "modality")?.items ?? [],
+    productLevels: FALLBACK_PRODUCT_LEVELS,
+    resolutionUnits: FALLBACK_RESOLUTION_UNITS,
+    formats: FALLBACK_FORMATS,
+    licenses: FALLBACK_LICENSES,
+  };
+}
+
+export async function getDataProductFormOptions(): Promise<DataProductFormOptions> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const response = await fetch(`${API_BASE_URL}/data-products/options`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+
+    const data = (await response.json()) as DataProductFormOptionsResponse;
+
+    return {
+      sources: data.sources?.length ? data.sources : FALLBACK_FORM_SOURCES,
+      scopes: data.scopes?.length ? data.scopes : buildFallbackFormOptions().scopes,
+      modalities: data.modalities?.length ? data.modalities : buildFallbackFormOptions().modalities,
+      productLevels: data.product_levels?.length ? data.product_levels : FALLBACK_PRODUCT_LEVELS,
+      resolutionUnits: data.resolution_units?.length ? data.resolution_units : FALLBACK_RESOLUTION_UNITS,
+      formats: data.formats?.length ? data.formats : FALLBACK_FORMATS,
+      licenses: data.licenses?.length ? data.licenses : FALLBACK_LICENSES,
+    };
+  } catch {
+    return buildFallbackFormOptions();
+  }
+}
+
+export function createDataset(payload: DatasetCreate): Promise<unknown> {
+  return postJsonOrThrow("/datasets", payload);
 }
