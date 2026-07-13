@@ -141,7 +141,6 @@ async function handleSubmit(e: Event) {
     0 0 0 1px rgba(56, 189, 248, 0.1) inset;
   backdrop-filter: blur(20px);
   z-index: 1;
-  overflow: hidden;
 }
 .login-card::before {
   content: "";
@@ -154,13 +153,11 @@ async function handleSubmit(e: Event) {
 }
 .login-card-glow {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.08), transparent 70%);
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.08), transparent 70%);
   animation: glow-pulse 4s ease-in-out infinite;
   pointer-events: none;
+  border-radius: 32px;
 }
 @keyframes glow-pulse {
   0%,
