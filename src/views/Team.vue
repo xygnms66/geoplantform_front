@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { getPersonalMembers, getProjects, getTeamGroups } from "@/lib/api";
 import type { PersonalMember, Project, TeamGroup } from "@/types";
 import { personalMembers, projects as projectFallback, teamGroups as teamGroupFallback } from "@/lib/staticData";
-import MemberCard from "@/components/MemberCard.vue";
+import MemberCard from "@/components/shared/MemberCard.vue";
 
 const rawMembers = ref<PersonalMember[]>(personalMembers);
 const projects = ref<Project[]>(projectFallback);

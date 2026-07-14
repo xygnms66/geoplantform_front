@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { getProjects } from "@/lib/api";
 import type { Project } from "@/types";
 import { projects as projectFallback } from "@/lib/staticData";
-import ProjectCard from "@/components/ProjectCard.vue";
+import ProjectCard from "@/components/shared/ProjectCard.vue";
 
 const projects = ref<Project[]>(projectFallback);
 onMounted(async () => {

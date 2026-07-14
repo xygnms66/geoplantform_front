@@ -406,7 +406,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import RadarVisual from '@/components/RadarVisual.vue'
+import RadarVisual from '@/components/marketing/RadarVisual.vue'
 
 const searchKeyword = ref('')
 const selectedTime = ref('最近7天')

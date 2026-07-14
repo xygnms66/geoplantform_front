@@ -1,25 +1,24 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import StudioDashboardPanel from "@/components/workbench/StudioDashboardPanel.vue";
-import StudioProjectCenterPanel from "@/components/workbench/StudioProjectCenterPanel.vue";
-import StudioDataCenterPanel from "@/components/workbench/StudioDataCenterPanel.vue";
-import { studioSections, type StudioSectionKey } from "@/lib/workbenchStudioData";
+import { computed, ref, type Component } from "vue";
+import {
+  getStudioPlugin,
+  normalizeStudioPluginKey,
+  studioPlugins,
+  type StudioPluginKey,
+} from "@/components/studio/shell/plugin-registry";
 
 const props = withDefaults(defineProps<{ initialTab?: string }>(), {
   initialTab: "dashboard",
 });
 
-function normalizeSection(tab: string): StudioSectionKey {
-  if (tab === "projects" || tab === "project") return "projects";
-  if (tab === "data") return "data";
-  return "dashboard";
-}
+const activeSection = ref<StudioPluginKey>(normalizeStudioPluginKey(props.initialTab));
 
-const activeSection = ref<StudioSectionKey>(normalizeSection(props.initialTab));
+const activePlugin = computed(() => getStudioPlugin(activeSection.value));
 
-const activeSectionMeta = computed(
-  () => studioSections.find((section) => section.key === activeSection.value) ?? studioSections[0],
-);
+const activeComponent = computed<Component>(() => {
+  const component = activePlugin.value.component;
+  return component as Component;
+});
 </script>
 
 <template>
@@ -30,28 +29,26 @@ const activeSectionMeta = computed(
       </div>
       <nav class="sidebar-nav">
         <button
-          v-for="section in studioSections"
-          :key="section.key"
+          v-for="plugin in studioPlugins"
+          :key="plugin.key"
           type="button"
-          :class="['nav-item', { active: activeSection === section.key }]"
-          @click="activeSection = section.key"
+          :class="['nav-item', { active: activeSection === plugin.key }]"
+          @click="activeSection = plugin.key"
         >
-          <span class="nav-icon">{{ section.icon }}</span>
+          <span class="nav-icon">{{ plugin.icon }}</span>
           <div class="nav-text">
-            <span class="nav-label">{{ section.label }}</span>
-            <span class="nav-desc">{{ section.desc }}</span>
+            <span class="nav-label">{{ plugin.label }}</span>
+            <span class="nav-desc">{{ plugin.desc }}</span>
           </div>
         </button>
       </nav>
       <div class="sidebar-footer">
         <div class="current-label">当前视图</div>
-        <div class="current-title">{{ activeSectionMeta.label }}</div>
+        <div class="current-title">{{ activePlugin.label }}</div>
       </div>
     </aside>
     <main class="content-area">
-      <StudioDashboardPanel v-if="activeSection === 'dashboard'" />
-      <StudioProjectCenterPanel v-else-if="activeSection === 'projects'" />
-      <StudioDataCenterPanel v-else />
+      <component :is="activeComponent" />
     </main>
   </div>
 </template>

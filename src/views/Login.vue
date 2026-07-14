@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import AstronautGuard from "@/components/AstronautGuard.vue";
+import AstronautGuard from "@/components/marketing/AstronautGuard.vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { login } from "@/lib/auth";

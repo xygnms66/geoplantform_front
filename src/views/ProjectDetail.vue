@@ -3,12 +3,12 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { getAchievements, getProject, getProjects } from "@/lib/api";
 import type { Achievement, Project } from "@/types";
-import AchievementCard from "@/components/AchievementCard.vue";
+import AchievementCard from "@/components/shared/AchievementCard.vue";
 import EvalTable, {
   type EvalTableData,
   type ModelCompTableData,
   type SimpleModelTableData,
-} from "@/components/EvalTable.vue";
+} from "@/components/shared/EvalTable.vue";
 
 type SubItem = {
   name: string;

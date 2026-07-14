@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import NavBar from "@/components/NavBar.vue";
-import UserMenu from "@/components/UserMenu.vue";
+import NavBar from "@/components/layout/NavBar.vue";
+import UserMenu from "@/components/layout/UserMenu.vue";
 
 const auth = useAuthStore();
 

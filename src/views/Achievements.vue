@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { getAchievements, getProjects } from "@/lib/api";
 import type { Achievement, Project } from "@/types";
 import { achievements as achievementFallback, projects as projectFallback } from "@/lib/staticData";
-import AchievementCard from "@/components/AchievementCard.vue";
+import AchievementCard from "@/components/shared/AchievementCard.vue";
 
 const achievements = ref<Achievement[]>(achievementFallback);
 const projects = ref<Project[]>(projectFallback);

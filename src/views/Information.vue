@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import WorkbenchPlatformClient from "@/components/WorkbenchPlatformClient.vue";
+import WorkbenchPlatformClient from "@/components/information/WorkbenchPlatformClient.vue";
 </script>
 
 <template>

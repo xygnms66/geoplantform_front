@@ -11,11 +11,11 @@ import {
   teamGroups as teamGroupFallback,
 } from "@/lib/staticData";
 import { dataCatalogCards as dataCatalogFallback } from "@/lib/dataCenterStaticData";
-import ProjectCard from "@/components/ProjectCard.vue";
-import HeroChart from "@/components/HeroChart.vue";
-import SolarSpiralPreview from "@/components/SolarSpiralPreview.vue";
-import HomeDataCenterPreview from "@/components/HomeDataCenterPreview.vue";
-import AchievementCard from "@/components/AchievementCard.vue";
+import ProjectCard from "@/components/shared/ProjectCard.vue";
+import HeroChart from "@/components/marketing/HeroChart.vue";
+import SolarSpiralPreview from "@/components/marketing/SolarSpiralPreview.vue";
+import HomeDataCenterPreview from "@/components/marketing/HomeDataCenterPreview.vue";
+import AchievementCard from "@/components/shared/AchievementCard.vue";
 
 const dashboard = ref<DashboardSummary>(dashboardFallback);
 const members = ref<PersonalMember[]>(personalMembers);

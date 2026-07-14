@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { FILTER_FALLBACK, getDataCenterFilters, getDataCenterSources } from "@/lib/dataCenterApi";
 import type { DataFilterGroup, DataSourceCard } from "@/types";
 import { dataSources as dataSourceFallback } from "@/lib/dataCenterStaticData";
-import DataCenterClient from "@/components/DataCenterClient.vue";
+import DataCenterClient from "@/components/data-center/DataCenterClient.vue";
 
 const sources = ref<DataSourceCard[]>(dataSourceFallback);
 const filters = ref<DataFilterGroup[]>(FILTER_FALLBACK);
