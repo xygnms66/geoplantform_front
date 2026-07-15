@@ -53,11 +53,6 @@ const PROJECT_SECTIONS: Record<string, ContentSection[]> = {
       ],
     },
     {
-      title: "成果展示",
-      content: "空间显式关联地理位置和遥感、矢量要素，增强遥感基础模型，实现从像素级解译到区域级地理智能的能力跃升。",
-      images: ["/project/aef4.png"],
-    },
-    {
       title: "下游应用",
       content:
         "面向遥感核心解译任务，通过微调基础嵌入模型验证跨场景泛化能力，实现全景分割、目标识别和变化检测。支撑自然资源调查与国土监测业务落地。",
