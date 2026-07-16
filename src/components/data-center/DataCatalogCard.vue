@@ -9,13 +9,23 @@ const descRef = ref<HTMLElement | null>(null);
 const isTruncated = ref(false);
 let resizeObserver: ResizeObserver | null = null;
 
-const statusText: Record<DataCatalogCardType["status"], string> = {
-  candidate: "候选数据",
-  planned: "计划接入",
-  available: "已入库",
-  processing: "处理中",
-  imported: "已接入",
-};
+const LOCAL_STORAGE_LABELS = new Set(["本地存储", "数据缺失"]);
+const DRIVE_STORAGE_LABELS = new Set(["外部链接", "下载中"]);
+
+function statusClass(status: string) {
+  if (status === "可用") return "dc-status-available";
+  if (status === "处理中" || status === "等待验收") return "dc-status-processing";
+  if (status === "已归档") return "dc-status-archived";
+  return "dc-status-candidate";
+}
+
+function isLocalStorage(status?: string | null) {
+  return !!status && LOCAL_STORAGE_LABELS.has(status);
+}
+
+function isDriveStorage(status?: string | null) {
+  return !!status && DRIVE_STORAGE_LABELS.has(status);
+}
 
 function updateTruncation() {
   const el = descRef.value;
@@ -106,10 +116,10 @@ function handleDriveClick() {
     <div class="dc-card-footer">
       <div class="dc-source-name"><span class="dc-dot" />{{ item.sourceName }}</div>
       <div class="dc-status-group">
-        <span :class="['dc-status', `dc-status-${item.status}`]">{{ statusText[item.status] }}</span>
+        <span :class="['dc-status', statusClass(item.status)]">{{ item.status }}</span>
         <template v-if="item.storageStatus">
           <button
-            v-if="item.storageStatus === 'local' && item.storagePath"
+            v-if="isLocalStorage(item.storageStatus) && item.storagePath"
             type="button"
             class="dc-action-button"
             @click="handleCopyPath"
@@ -118,7 +128,7 @@ function handleDriveClick() {
             {{ copySuccess ? "✓ 已复制" : "📋 复制路径" }}
           </button>
           <button
-            v-else-if="item.storageStatus === 'drive' && item.storagePath"
+            v-else-if="isDriveStorage(item.storageStatus) && item.storagePath"
             type="button"
             class="dc-action-button"
             @click="handleDriveClick"
@@ -274,6 +284,7 @@ function handleDriveClick() {
   background: rgba(251, 191, 36, 0.12);
   border: 1px solid rgba(251, 191, 36, 0.22);
 }
+.dc-status-archived,
 .dc-status-candidate {
   color: var(--muted);
   background: rgba(148, 163, 184, 0.1);

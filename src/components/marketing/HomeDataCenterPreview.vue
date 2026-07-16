@@ -12,7 +12,7 @@ let radarInstance: echarts.ECharts | null = null;
 // --- computed stats ---
 const internalCards = computed(() => props.cards.filter((c) => c.source === "internal" || c.source === "georemote"));
 const externalCards = computed(() => props.cards.filter((c) => c.source !== "internal" && c.source !== "georemote"));
-const readyCards = computed(() => props.cards.filter((c) => c.status === "available" || c.status === "imported"));
+const readyCards = computed(() => props.cards.filter((c) => c.status === "可用"));
 
 const allModalities = computed(() => {
   const set = new Set<string>();
@@ -115,18 +115,11 @@ function handleRadarResize() {
 }
 
 function statusText(status: DataCatalogCard["status"]) {
-  const map: Record<DataCatalogCard["status"], string> = {
-    candidate: "候选中",
-    planned: "待接入",
-    available: "已就绪",
-    processing: "处理中",
-    imported: "已入库",
-  };
-  return map[status];
+  return status;
 }
 function statusClass(status: DataCatalogCard["status"]) {
-  if (status === "available" || status === "imported") return "hdc-status-ready";
-  if (status === "processing" || status === "planned") return "hdc-status-pending";
+  if (status === "可用") return "hdc-status-ready";
+  if (status === "处理中" || status === "等待验收") return "hdc-status-pending";
   return "hdc-status-muted";
 }
 

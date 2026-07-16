@@ -8,19 +8,22 @@ defineProps<{
   cards: DataCatalogCardType[];
 }>();
 
-const statusText: Record<DataCatalogCardType["status"], string> = {
-  candidate: "候选数据",
-  planned: "计划接入",
-  available: "已入库",
-  processing: "处理中",
-  imported: "已接入",
-};
+const LOCAL_STORAGE_LABELS = new Set(["本地存储", "数据缺失"]);
+const DRIVE_STORAGE_LABELS = new Set(["外部链接", "下载中"]);
 
-function statusClass(status: DataCatalogCardType["status"]) {
-  if (status === "available" || status === "imported") return "status-success";
-  if (status === "processing") return "status-running";
-  if (status === "planned") return "status-warning";
+function statusClass(status: string) {
+  if (status === "可用") return "status-success";
+  if (status === "处理中" || status === "等待验收") return "status-running";
+  if (status === "已归档") return "status-muted";
   return "status-muted";
+}
+
+function isLocalStorage(status?: string | null) {
+  return !!status && LOCAL_STORAGE_LABELS.has(status);
+}
+
+function isDriveStorage(status?: string | null) {
+  return !!status && DRIVE_STORAGE_LABELS.has(status);
 }
 
 const copiedId = ref<number | null>(null);
@@ -79,7 +82,7 @@ function handleDriveClick(item: DataCatalogCardType) {
                   {{ asset.sourceName }} / {{ asset.size ?? "未知" }} / {{ asset.samples ?? "未知" }}
                 </div>
               </div>
-              <span class="status-pill" :class="statusClass(asset.status)">{{ statusText[asset.status] }}</span>
+              <span class="status-pill" :class="statusClass(asset.status)">{{ asset.status }}</span>
             </div>
 
             <el-tooltip
@@ -122,7 +125,7 @@ function handleDriveClick(item: DataCatalogCardType) {
             <div class="asset-actions">
               <button class="small-btn" type="button">详情</button>
               <button
-                v-if="asset.storageStatus === 'local' && asset.storagePath"
+                v-if="isLocalStorage(asset.storageStatus) && asset.storagePath"
                 class="small-btn"
                 type="button"
                 @click="handleCopyPath(asset)"
@@ -130,7 +133,7 @@ function handleDriveClick(item: DataCatalogCardType) {
                 {{ copiedId === asset.id ? "✓ 已复制" : "📋 复制路径" }}
               </button>
               <button
-                v-else-if="asset.storageStatus === 'drive' && asset.storagePath"
+                v-else-if="isDriveStorage(asset.storageStatus) && asset.storagePath"
                 class="small-btn"
                 type="button"
                 @click="handleDriveClick(asset)"

@@ -155,7 +155,8 @@ export type DataSourceKey =
   | "stac"
   | "agent"
   | "other";
-export type DataStatus = "candidate" | "planned" | "available" | "processing" | "imported";
+export type DataStatus = string;
+export type StorageStatus = string;
 
 export type DataSourceCard = {
   key: DataSourceKey;
@@ -192,8 +193,6 @@ export type ActiveCatalogFilter = {
   groupKey: string;
   item: FilterOption;
 };
-
-export type StorageStatus = "local" | "drive";
 
 export type DataCatalogCard = {
   id: number;
