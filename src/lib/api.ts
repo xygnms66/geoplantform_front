@@ -1,7 +1,7 @@
 import { achievements, dashboardFallback, personalMembers, projects, teamGroups } from "./staticData";
 import type { Achievement, DashboardSummary, PersonalMember, Project, TeamGroup } from "@/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const responseCache = new Map<string, unknown>();
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {

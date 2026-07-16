@@ -1,9 +1,15 @@
 import type { DataCatalogCard, DataSourceCard, PipelineMiniCard } from "@/types";
 
 export const dataSources: DataSourceCard[] = [
-  { key: "huggingface", name: "Hugging Face", subtitle: "社区开源数据", icon: "🤗" },
-  { key: "haina", name: "海纳数据枢纽", subtitle: "平台候选数据", icon: "🌊" },
-  { key: "georemote", name: "GeoRemote", subtitle: "遥感本地数据", icon: "🛰️" },
+  { key: "internal", name: "内部已有数据", subtitle: "平台或单位内部已有的数据资产", icon: "🗄️" },
+  { key: "georemote", name: "GeoRemote", subtitle: "本地遥感数据及内部统一存储", icon: "🛰️" },
+  { key: "gee", name: "Google Earth Engine", subtitle: "通过 GEE 获取的遥感数据", icon: "🌐" },
+  { key: "huggingface", name: "Hugging Face", subtitle: "Hugging Face 上公开的数据集", icon: "🤗" },
+  { key: "paper", name: "论文开源数据", subtitle: "论文、项目或研究机构公开的数据", icon: "📄" },
+  { key: "data_portal", name: "公开数据门户", subtitle: "政府、科研机构或公共平台发布的数据", icon: "🌍" },
+  { key: "stac", name: "STAC 数据目录", subtitle: "通过 STAC Catalog 或 Collection 获取", icon: "📚" },
+  { key: "agent", name: "Agent 自动发现", subtitle: "由数据发现 Agent 搜索和推荐的数据", icon: "🤖" },
+  { key: "other", name: "其他来源", subtitle: "不属于已有分类的其他数据来源", icon: "📦" },
 ];
 
 export const dataCatalogCards: DataCatalogCard[] = [

@@ -19,8 +19,9 @@ import {
   getDataProduct,
   getDataProductFormOptions,
   updateDataProduct,
+  FormOptionsLoadError,
   type DataProductFormSource,
-  type LicenseOption,
+  type LabeledOption,
   type ProductFormFilterOption,
 } from "@/lib/dataCenterApi"
 import type { DataProductCreate } from "@/types"
@@ -33,7 +34,7 @@ interface ProductForm {
   platform: string
   sensor: string
   product_level: string | null
-  license: number | null
+  license: string | null
   format: string
   resolution_value: number | null
   resolution_unit: string
@@ -56,10 +57,10 @@ const submitError = ref("")
 const sourceOptions = ref<DataProductFormSource[]>([])
 const scopeOptions = ref<ProductFormFilterOption[]>([])
 const modalityOptions = ref<ProductFormFilterOption[]>([])
-const productLevelOptions = ref<string[]>([])
+const productLevelOptions = ref<LabeledOption[]>([])
 const resolutionUnitOptions = ref<string[]>([])
-const formatOptions = ref<string[]>([])
-const licenseOptions = ref<LicenseOption[]>([])
+const formatOptions = ref<LabeledOption[]>([])
+const licenseOptions = ref<LabeledOption[]>([])
 
 function hasLoadedFormOptions() {
   return (
@@ -128,9 +129,8 @@ async function loadReferenceOptions() {
     licenseOptions.value = options.licenses
 
     if (!productForm.format && formatOptions.value.length > 0) {
-      productForm.format = formatOptions.value.includes("GeoTIFF")
-        ? "GeoTIFF"
-        : formatOptions.value[0]
+      const hasGeoTiff = formatOptions.value.some((opt) => opt.value === "GeoTIFF")
+      productForm.format = hasGeoTiff ? "GeoTIFF" : formatOptions.value[0].value
     }
 
     if (!productForm.resolution_unit && resolutionUnitOptions.value.length > 0) {
@@ -140,7 +140,8 @@ async function loadReferenceOptions() {
     }
   } catch (error) {
     console.error("加载产品基础选项失败：", error)
-    ElMessage.error("产品表单选项加载失败")
+    ElMessage.error(error instanceof Error ? error.message : "产品表单选项加载失败")
+    throw error
   } finally {
     optionLoading.value = false
   }
@@ -161,7 +162,11 @@ async function openCreateDialog() {
   dialogVisible.value = true
 
   if (!hasLoadedFormOptions()) {
-    await loadReferenceOptions()
+    try {
+      await loadReferenceOptions()
+    } catch {
+      dialogVisible.value = false
+    }
   }
 }
 
@@ -202,7 +207,9 @@ async function openEditDialog(productId: number) {
     productFormRef.value?.clearValidate()
   } catch (error) {
     console.error("加载产品详情失败：", error)
-    ElMessage.error("产品详情加载失败")
+    if (!(error instanceof FormOptionsLoadError)) {
+      ElMessage.error(error instanceof Error ? error.message : "产品详情加载失败")
+    }
     dialogVisible.value = false
   } finally {
     optionLoading.value = false
@@ -222,7 +229,7 @@ function buildSubmitPayload(): DataProductCreate {
     platform: productForm.platform.trim() || null,
     sensor: productForm.sensor.trim() || null,
     product_level: productForm.product_level || null,
-    license: Number(productForm.license),
+    license: productForm.license,
     resolution_value:
       productForm.resolution_value === null ? null : Number(productForm.resolution_value),
     resolution_unit: productForm.resolution_unit as DataProductCreate["resolution_unit"],
@@ -266,7 +273,9 @@ async function submitProduct() {
 }
 
 onMounted(() => {
-  loadReferenceOptions()
+  loadReferenceOptions().catch(() => {
+    // 错误已在 loadReferenceOptions 中通过 ElMessage 提示
+  })
 })
 
 defineExpose({
@@ -385,10 +394,16 @@ defineExpose({
                 >
                   <el-option
                     v-for="level in productLevelOptions"
-                    :key="level"
-                    :label="level"
-                    :value="level"
-                  />
+                    :key="level.value"
+                    :label="level.label"
+                    :value="level.value"
+                    :title="level.description || undefined"
+                  >
+                    <div class="option-with-desc">
+                      <span>{{ level.label }}</span>
+                      <span v-if="level.description" class="option-desc">{{ level.description }}</span>
+                    </div>
+                  </el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -403,10 +418,16 @@ defineExpose({
                 >
                   <el-option
                     v-for="opt in licenseOptions"
-                    :key="opt.id"
-                    :label="opt.name"
-                    :value="opt.id"
-                  />
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                    :title="opt.description || undefined"
+                  >
+                    <div class="option-with-desc">
+                      <span>{{ opt.label }}</span>
+                      <span v-if="opt.description" class="option-desc">{{ opt.description }}</span>
+                    </div>
+                  </el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -419,7 +440,18 @@ defineExpose({
                   style="width: 100%"
                   popper-class="dark-popper"
                 >
-                  <el-option v-for="opt in formatOptions" :key="opt" :label="opt" :value="opt" />
+                  <el-option
+                    v-for="opt in formatOptions"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                    :title="opt.description || undefined"
+                  >
+                    <div class="option-with-desc">
+                      <span>{{ opt.label }}</span>
+                      <span v-if="opt.description" class="option-desc">{{ opt.description }}</span>
+                    </div>
+                  </el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -744,5 +776,31 @@ defineExpose({
 
 .dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon {
   color: #4ade80 !important;
+}
+
+/* 带 description 的选项需要突破 el-option 默认固定高度，否则说明文字会被压扁 */
+.dark-popper .el-select-dropdown__item:has(.option-with-desc) {
+  height: auto;
+  min-height: 34px;
+  line-height: normal;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: normal;
+}
+
+.dark-popper .option-with-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.dark-popper .option-with-desc .option-desc {
+  color: #8aa0b8;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
 }
 </style>

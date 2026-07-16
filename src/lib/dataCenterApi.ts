@@ -64,10 +64,10 @@ export type DataProductFormSource = {
   icon?: string | null;
 };
 
-export type LicenseOption = {
-  id: number;
-  name: string;
+export type LabeledOption = {
+  value: string;
   label: string;
+  description?: string | null;
 };
 
 export type ProductFormFilterOption = FilterOption & {
@@ -78,11 +78,18 @@ export type DataProductFormOptions = {
   sources: DataProductFormSource[];
   scopes: ProductFormFilterOption[];
   modalities: ProductFormFilterOption[];
-  productLevels: string[];
+  productLevels: LabeledOption[];
   resolutionUnits: string[];
-  formats: string[];
-  licenses: LicenseOption[];
+  formats: LabeledOption[];
+  licenses: LabeledOption[];
 };
+
+export class FormOptionsLoadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "FormOptionsLoadError";
+  }
+}
 
 export type DataProductDetail = DataProduct & {
   scopes?: Array<{ id: number; name: string; description?: string | null }>;
@@ -257,87 +264,65 @@ export function updateDataProduct(productId: number, payload: DataProductCreate)
   });
 }
 
-const FALLBACK_FORM_SOURCES: DataProductFormSource[] = [
-  { id: 1, key: "huggingface", name: "Hugging Face", subtitle: "社区开源数据", icon: "🤗" },
-  { id: 2, key: "haina", name: "海纳数据枢纽", subtitle: "平台候选数据", icon: "🌊" },
-  { id: 3, key: "georemote", name: "GeoRemote", subtitle: "遥感自有数据", icon: "🗄️" },
-  { id: 4, key: "paper", name: "论文开源数据", subtitle: "学术论文附带数据", icon: "📄" },
-  { id: 5, key: "gee", name: "GEE 数据集", subtitle: "Google Earth Engine 公开数据产品", icon: "🛰️" },
-];
-
-const FALLBACK_PRODUCT_LEVELS = ["L0", "L1", "L1A", "L1B", "L1C", "L2", "L2A", "L3", "L4"];
-
-const FALLBACK_RESOLUTION_UNITS = ["cm", "m", "km"];
-
-const FALLBACK_FORMATS = [
-  "GeoTIFF",
-  "COG",
-  "TIFF",
-  "GRIB",
-  "Shapefile",
-  "GeoJSON",
-  "CSV",
-  "Parquet",
-  "GeoParquet",
-  "JSON",
-  "JSONL",
-];
-
-const FALLBACK_LICENSES: LicenseOption[] = [
-  { id: 1, name: "Internal", label: "内部已有数据资产" },
-  { id: 2, name: "Public", label: "外部公开数据集" },
-  { id: 3, name: "Restricted", label: "受项目或客户授权限制的数据" },
-];
+function normalizeLabeledOptions(items: Array<string | LabeledOption> | undefined): LabeledOption[] {
+  if (!items?.length) return [];
+  return items.map((item) =>
+    typeof item === "string"
+      ? { value: item, label: item, description: null }
+      : {
+          value: item.value,
+          label: item.label || item.value,
+          description: item.description ?? null,
+        },
+  );
+}
 
 type DataProductFormOptionsResponse = {
   sources?: DataProductFormSource[];
   scopes?: ProductFormFilterOption[];
   modalities?: ProductFormFilterOption[];
-  product_levels?: string[];
+  product_levels?: Array<string | LabeledOption>;
   resolution_units?: string[];
-  formats?: string[];
-  licenses?: LicenseOption[];
+  formats?: Array<string | LabeledOption>;
+  licenses?: Array<string | LabeledOption>;
 };
 
-function buildFallbackFormOptions(): DataProductFormOptions {
-  return {
-    sources: FALLBACK_FORM_SOURCES,
-    scopes: FILTER_FALLBACK.find((group) => group.key === "scope")?.items ?? [],
-    modalities: FILTER_FALLBACK.find((group) => group.key === "modality")?.items ?? [],
-    productLevels: FALLBACK_PRODUCT_LEVELS,
-    resolutionUnits: FALLBACK_RESOLUTION_UNITS,
-    formats: FALLBACK_FORMATS,
-    licenses: FALLBACK_LICENSES,
-  };
-}
-
 export async function getDataProductFormOptions(): Promise<DataProductFormOptions> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     const response = await fetch(`${API_BASE_URL}/data-products/options`, {
       cache: "no-store",
       signal: controller.signal,
     });
-    clearTimeout(timeout);
 
     if (!response.ok) {
-      throw new Error(`Request failed: ${response.status}`);
+      throw new FormOptionsLoadError(`加载产品表单选项失败（HTTP ${response.status}）`);
     }
 
     const data = (await response.json()) as DataProductFormOptionsResponse;
 
     return {
-      sources: data.sources?.length ? data.sources : FALLBACK_FORM_SOURCES,
-      scopes: data.scopes?.length ? data.scopes : buildFallbackFormOptions().scopes,
-      modalities: data.modalities?.length ? data.modalities : buildFallbackFormOptions().modalities,
-      productLevels: data.product_levels?.length ? data.product_levels : FALLBACK_PRODUCT_LEVELS,
-      resolutionUnits: data.resolution_units?.length ? data.resolution_units : FALLBACK_RESOLUTION_UNITS,
-      formats: data.formats?.length ? data.formats : FALLBACK_FORMATS,
-      licenses: data.licenses?.length ? data.licenses : FALLBACK_LICENSES,
+      sources: data.sources ?? [],
+      scopes: data.scopes ?? [],
+      modalities: data.modalities ?? [],
+      productLevels: normalizeLabeledOptions(data.product_levels),
+      resolutionUnits: data.resolution_units ?? [],
+      formats: normalizeLabeledOptions(data.formats),
+      licenses: normalizeLabeledOptions(data.licenses),
     };
-  } catch {
-    return buildFallbackFormOptions();
+  } catch (error) {
+    if (error instanceof FormOptionsLoadError) {
+      throw error;
+    }
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new FormOptionsLoadError("加载产品表单选项超时，请检查后端服务是否可用");
+    }
+    const detail = error instanceof Error ? error.message : "未知错误";
+    throw new FormOptionsLoadError(`加载产品表单选项失败：${detail}`);
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

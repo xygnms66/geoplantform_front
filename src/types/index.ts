@@ -145,7 +145,16 @@ export type PipelineOutput = {
   status: string;
 };
 
-export type DataSourceKey = "huggingface" | "haina" | "georemote" | "internal" | "paper";
+export type DataSourceKey =
+  | "internal"
+  | "georemote"
+  | "gee"
+  | "huggingface"
+  | "paper"
+  | "data_portal"
+  | "stac"
+  | "agent"
+  | "other";
 export type DataStatus = "candidate" | "planned" | "available" | "processing" | "imported";
 
 export type DataSourceCard = {
@@ -222,9 +231,9 @@ export type DataProductCreate = {
   sensor?: string | null;
   product_level?: string | null;
   description?: string | null;
-  license?: number;
+  license?: string;
   resolution_value?: number | null;
-  resolution_unit?: "cm" | "m" | "km";
+  resolution_unit?: "cm" | "m" | "km" | "deg" | "arcsec";
   format?: string;
   scope_ids?: number[];
   modality_ids?: number[];
@@ -239,8 +248,7 @@ export type DataProduct = {
   sensor?: string | null;
   product_level?: string | null;
   description?: string | null;
-  license: number;
-  license_name?: string | null;
+  license: string;
   resolution_value?: number | null;
   resolution_unit?: string | null;
   format?: string | null;
