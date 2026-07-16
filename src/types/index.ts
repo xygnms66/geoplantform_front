@@ -242,6 +242,7 @@ export type DataProduct = {
   id: number;
   name: string;
   source_id?: number | null;
+  source_type?: string | null;
   provider?: string | null;
   platform?: string | null;
   sensor?: string | null;
@@ -256,17 +257,48 @@ export type DataProduct = {
 };
 
 export type DatasetCreate = {
-  display_name: string;
-  product_id?: number | null;
+  product_id: number;
   region?: string | null;
   time_start?: string | null;
   time_end?: string | null;
-  sample_count?: number | null;
-  status?: number;
-  storage_location_type?: number;
-  storage_path?: string | null;
+  storage_type?: "local" | "web" | null;
+  bucket_id?: number | null;
+  object_prefix?: string | null;
   source_url?: string | null;
-  agent_summary?: string | null;
+};
+
+export type StorageBucket = {
+  id: number;
+  backend_id: number;
+  bucket_name: string;
+  mount_protocol?: string | null;
+  mount_path?: string | null;
+  description?: string | null;
+  is_default: boolean;
+  is_active: boolean;
+  status: string;
+  backend_key?: string | null;
+  backend_name?: string | null;
+  backend_type?: string | null;
+  type_label: string;
+  endpoint_url?: string | null;
+};
+
+export type StorageBackend = {
+  id: number;
+  key: string;
+  name: string;
+  backend_type: string;
+  access_protocol: string;
+  endpoint_url?: string | null;
+  console_url?: string | null;
+  region?: string | null;
+  capacity_bytes?: number | null;
+  capacity: string;
+  status: string;
+  type_label: string;
+  description?: string | null;
+  is_active: boolean;
 };
 
 export type PipelineMiniCard = {

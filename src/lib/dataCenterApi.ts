@@ -7,8 +7,11 @@ import type {
   DatasetCreate,
   DataSourceCard,
   FilterOption,
+  StorageBucket,
 } from "@/types";
+import { getToken } from "./auth";
 import { dataCatalogCards, dataSources } from "./dataCenterStaticData";
+import { dataStores as storageFallback } from "./workbenchStudioData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const REQUEST_TIMEOUT_MS = 5000;
@@ -53,15 +56,7 @@ export const FILTER_FALLBACK: DataFilterGroup[] = [
 
 type DataCatalogFiltersResponse = {
   groups?: DataFilterGroup[];
-  sources?: DataProductFormSource[];
-};
-
-export type DataProductFormSource = {
-  id: number;
-  key: string;
-  name: string;
-  subtitle?: string | null;
-  icon?: string | null;
+  sources?: DataSourceCard[];
 };
 
 export type LabeledOption = {
@@ -75,7 +70,7 @@ export type ProductFormFilterOption = FilterOption & {
 };
 
 export type DataProductFormOptions = {
-  sources: DataProductFormSource[];
+  sources: LabeledOption[];
   scopes: ProductFormFilterOption[];
   modalities: ProductFormFilterOption[];
   productLevels: LabeledOption[];
@@ -246,7 +241,8 @@ async function postJsonOrThrow<T>(path: string, body: unknown): Promise<T> {
 }
 
 export function getDataProducts(): Promise<DataProduct[]> {
-  return fetchJson<DataProduct[]>("/data-products", []);
+  // 入库表单需要最新列表，绕过 responseCache
+  return fetchJsonOrThrow<DataProduct[]>("/data-products").catch(() => []);
 }
 
 export function createDataProduct(payload: DataProductCreate): Promise<DataProduct> {
@@ -278,7 +274,7 @@ function normalizeLabeledOptions(items: Array<string | LabeledOption> | undefine
 }
 
 type DataProductFormOptionsResponse = {
-  sources?: DataProductFormSource[];
+  sources?: Array<string | LabeledOption>;
   scopes?: ProductFormFilterOption[];
   modalities?: ProductFormFilterOption[];
   product_levels?: Array<string | LabeledOption>;
@@ -304,7 +300,7 @@ export async function getDataProductFormOptions(): Promise<DataProductFormOption
     const data = (await response.json()) as DataProductFormOptionsResponse;
 
     return {
-      sources: data.sources ?? [],
+      sources: normalizeLabeledOptions(data.sources),
       scopes: data.scopes ?? [],
       modalities: data.modalities ?? [],
       productLevels: normalizeLabeledOptions(data.product_levels),
@@ -327,5 +323,50 @@ export async function getDataProductFormOptions(): Promise<DataProductFormOption
 }
 
 export function createDataset(payload: DatasetCreate): Promise<unknown> {
-  return postJsonOrThrow("/datasets", payload);
+  const token = getToken();
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return fetchJsonOrThrow("/datasets", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  });
+}
+
+function toFallbackStorageBuckets(): StorageBucket[] {
+  return storageFallback.map((store, index) => ({
+    id: -(index + 1),
+    backend_id: -(index + 1),
+    bucket_name: store.name,
+    mount_protocol: store.type.toLowerCase() === "nfs" ? "nfs" : "s3fs",
+    mount_path: null,
+    description: null,
+    is_default: index === 0,
+    is_active: true,
+    status: "运行中",
+    backend_key: store.name,
+    backend_name: store.name,
+    backend_type: store.type.toLowerCase(),
+    type_label: store.type,
+    endpoint_url: store.endpoint,
+  }));
+}
+
+export async function getStorageBuckets(activeOnly = false): Promise<StorageBucket[]> {
+  const query = activeOnly ? "?active_only=true" : "";
+  const path = `/storage-buckets${query}`;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      return toFallbackStorageBuckets();
+    }
+    return (await response.json()) as StorageBucket[];
+  } catch {
+    return toFallbackStorageBuckets();
+  }
 }

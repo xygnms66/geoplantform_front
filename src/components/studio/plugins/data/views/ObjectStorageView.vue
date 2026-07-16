@@ -1,5 +1,31 @@
 <script setup lang="ts">
-import { dataStores } from "@/lib/workbenchStudioData";
+import { computed, onMounted, ref } from "vue";
+
+import { getStorageBuckets } from "@/lib/dataCenterApi";
+import type { StorageBucket } from "@/types";
+
+const buckets = ref<StorageBucket[]>([]);
+const loading = ref(false);
+const loadError = ref("");
+
+const hasDbBuckets = computed(() => buckets.value.some((item) => item.id > 0));
+
+async function loadBuckets() {
+  loading.value = true;
+  loadError.value = "";
+  try {
+    buckets.value = await getStorageBuckets();
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : "加载 Bucket 列表失败";
+    buckets.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(() => {
+  void loadBuckets();
+});
 </script>
 
 <template>
@@ -8,21 +34,48 @@ import { dataStores } from "@/lib/workbenchStudioData";
       <div class="panel-header">
         <div>
           <h2 class="panel-title">对象存储</h2>
-          <p class="panel-desc">S3 / MinIO / NAS 接入资源，可继续扩展 Bucket 浏览。</p>
+          <p class="panel-desc">按 Bucket / 存储卷展示挂载与接入信息。</p>
         </div>
-        <button class="text-btn" type="button">全部存储</button>
+        <div class="header-actions">
+          <button class="text-btn" type="button" :disabled="loading" @click="loadBuckets">
+            {{ loading ? "刷新中…" : "刷新" }}
+          </button>
+          <button class="text-btn" type="button" @click="loadBuckets">全部 Bucket</button>
+        </div>
       </div>
+
+      <p v-if="loadError" class="hint error">{{ loadError }}</p>
+      <p v-else-if="!loading && !hasDbBuckets" class="hint">
+        当前展示为本地兜底数据；连接后端并完成 seed 后可查看数据库中的 Bucket。
+      </p>
+
       <div class="storage-table">
         <div class="storage-row table-head">
-          <span>名称</span><span>类型</span><span>容量</span><span>状态</span><span>Endpoint</span><span>操作</span>
+          <span>Bucket</span>
+          <span>类型</span>
+          <span>挂载协议</span>
+          <span>挂载路径</span>
+          <span>状态</span>
+          <span>所属后端</span>
+          <span>Endpoint</span>
         </div>
-        <div v-for="store in dataStores" :key="store.name" class="storage-row">
-          <span class="store-name">{{ store.name }}</span>
-          <span>{{ store.type }}</span>
-          <span>{{ store.capacity }}</span>
-          <span><i class="status-pill status-success">运行中</i></span>
-          <span class="endpoint">{{ store.endpoint }}</span>
-          <span><button class="small-btn" type="button">Bucket</button></span>
+        <div v-if="loading && buckets.length === 0" class="storage-row empty-row">加载中…</div>
+        <div v-else-if="!loading && buckets.length === 0" class="storage-row empty-row">暂无 Bucket</div>
+        <div v-for="bucket in buckets" :key="bucket.id" class="storage-row">
+          <span class="store-name">
+            {{ bucket.bucket_name }}
+            <i v-if="bucket.is_default" class="default-tag">默认</i>
+          </span>
+          <span>{{ bucket.type_label || bucket.backend_type || "-" }}</span>
+          <span>{{ bucket.mount_protocol || "-" }}</span>
+          <span class="endpoint" :title="bucket.mount_path || ''">{{ bucket.mount_path || "-" }}</span>
+          <span>
+            <i class="status-pill" :class="bucket.is_active ? 'status-success' : 'status-muted'">
+              {{ bucket.status }}
+            </i>
+          </span>
+          <span class="endpoint" :title="bucket.backend_name || ''">{{ bucket.backend_name || "-" }}</span>
+          <span class="endpoint" :title="bucket.endpoint_url || ''">{{ bucket.endpoint_url || "-" }}</span>
         </div>
       </div>
     </div>
@@ -60,6 +113,12 @@ import { dataStores } from "@/lib/workbenchStudioData";
   color: var(--muted);
 }
 
+.header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
 .text-btn {
   padding: 0;
   color: #67e8f9;
@@ -69,14 +128,19 @@ import { dataStores } from "@/lib/workbenchStudioData";
   font-weight: 800;
 }
 
-.small-btn {
-  height: 30px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 9px;
-  color: #dff5ff;
-  background: rgba(56, 189, 248, 0.14);
-  cursor: pointer;
+.text-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint {
+  margin: 0 0 12px;
+  color: #93c5fd;
+  font-size: 13px;
+}
+
+.hint.error {
+  color: #fca5a5;
 }
 
 .storage-table {
@@ -88,8 +152,8 @@ import { dataStores } from "@/lib/workbenchStudioData";
 .storage-row {
   min-height: 54px;
   display: grid;
-  grid-template-columns: 1fr 0.7fr 0.85fr 0.8fr 1.4fr 0.65fr;
-  gap: 12px;
+  grid-template-columns: 1.1fr 0.55fr 0.7fr 1.1fr 0.7fr 0.95fr 1.2fr;
+  gap: 10px;
   align-items: center;
   padding: 0 14px;
   border-bottom: 1px solid rgba(121, 167, 255, 0.1);
@@ -101,6 +165,10 @@ import { dataStores } from "@/lib/workbenchStudioData";
   border-bottom: 0;
 }
 
+.empty-row {
+  color: var(--muted);
+}
+
 .table-head {
   color: var(--muted);
   background: rgba(2, 8, 21, 0.44);
@@ -110,6 +178,23 @@ import { dataStores } from "@/lib/workbenchStudioData";
 .store-name {
   color: #fff;
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.default-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.18);
 }
 
 .endpoint {
@@ -135,7 +220,12 @@ import { dataStores } from "@/lib/workbenchStudioData";
   background: rgba(34, 197, 94, 0.16);
 }
 
-@media (max-width: 960px) {
+.status-muted {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+@media (max-width: 1100px) {
   .storage-row {
     grid-template-columns: 1fr;
     padding: 12px 14px;

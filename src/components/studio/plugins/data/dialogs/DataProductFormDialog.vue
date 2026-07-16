@@ -20,15 +20,14 @@ import {
   getDataProductFormOptions,
   updateDataProduct,
   FormOptionsLoadError,
-  type DataProductFormSource,
   type LabeledOption,
   type ProductFormFilterOption,
 } from "@/lib/dataCenterApi"
-import type { DataProductCreate } from "@/types"
+import type { DataProduct, DataProductCreate } from "@/types"
 
 interface ProductForm {
   name: string
-  source_id: number | null
+  source: string | null
   description: string
   provider: string
   platform: string
@@ -43,7 +42,7 @@ interface ProductForm {
 }
 
 const emit = defineEmits<{
-  saved: []
+  saved: [product?: DataProduct]
 }>()
 
 const dialogVisible = ref(false)
@@ -54,7 +53,7 @@ const optionLoading = ref(false)
 const submitting = ref(false)
 const submitError = ref("")
 
-const sourceOptions = ref<DataProductFormSource[]>([])
+const sourceOptions = ref<LabeledOption[]>([])
 const scopeOptions = ref<ProductFormFilterOption[]>([])
 const modalityOptions = ref<ProductFormFilterOption[]>([])
 const productLevelOptions = ref<LabeledOption[]>([])
@@ -77,7 +76,7 @@ function hasLoadedFormOptions() {
 function createEmptyProductForm(): ProductForm {
   return {
     name: "",
-    source_id: null,
+    source: null,
     description: "",
     provider: "",
     platform: "",
@@ -181,7 +180,7 @@ async function openEditDialog(productId: number) {
 
     Object.assign(productForm, {
       name: product.name ?? "",
-      source_id: product.source_id ?? null,
+      source: product.source_type ?? null,
       description: product.description ?? "",
       provider: product.provider ?? "",
       platform: product.platform ?? "",
@@ -220,10 +219,16 @@ function closeDialog() {
   dialogVisible.value = false
 }
 
+function resolveSourceId(sourceKey: string | null): number | null {
+  if (!sourceKey) return null
+  const index = sourceOptions.value.findIndex((item) => item.value === sourceKey)
+  return index >= 0 ? index + 1 : null
+}
+
 function buildSubmitPayload(): DataProductCreate {
   return {
     name: productForm.name.trim(),
-    source_id: productForm.source_id === null ? null : Number(productForm.source_id),
+    source_id: resolveSourceId(productForm.source),
     description: productForm.description.trim() || null,
     provider: productForm.provider.trim() || null,
     platform: productForm.platform.trim() || null,
@@ -254,15 +259,17 @@ async function submitProduct() {
     const payload = buildSubmitPayload()
 
     if (editingProductId.value !== null) {
-      await updateDataProduct(editingProductId.value, payload)
+      const updated = await updateDataProduct(editingProductId.value, payload)
       ElMessage.success("数据产品修改成功")
+      dialogVisible.value = false
+      emit("saved", updated)
     } else {
-      await createDataProduct(payload)
+      const created = await createDataProduct(payload)
       ElMessage.success("数据产品创建成功")
+      dialogVisible.value = false
+      emit("saved", created)
     }
 
-    dialogVisible.value = false
-    emit("saved")
     resetProductForm()
   } catch (error) {
     console.error("保存数据产品失败：", error)
@@ -326,9 +333,9 @@ defineExpose({
             </el-col>
 
             <el-col :xs="24" :sm="12">
-              <el-form-item label="数据来源" prop="source_id">
+              <el-form-item label="数据来源" prop="source">
                 <el-select
-                  v-model="productForm.source_id"
+                  v-model="productForm.source"
                   filterable
                   clearable
                   placeholder="请选择数据来源"
@@ -336,16 +343,15 @@ defineExpose({
                   popper-class="dark-popper"
                 >
                   <el-option
-                    v-for="item in sourceOptions"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
+                    v-for="opt in sourceOptions"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                    :title="opt.description || undefined"
                   >
-                    <div class="option-content">
-                      <span class="option-name">{{ item.name }}</span>
-                      <span v-if="item.subtitle || item.key" class="option-description">
-                        {{ item.subtitle || item.key }}
-                      </span>
+                    <div class="option-with-desc">
+                      <span>{{ opt.label }}</span>
+                      <span v-if="opt.description" class="option-desc">{{ opt.description }}</span>
                     </div>
                   </el-option>
                 </el-select>
@@ -561,7 +567,7 @@ defineExpose({
 .modal-mask {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 60;
   display: flex;
   align-items: flex-start;
   justify-content: center;

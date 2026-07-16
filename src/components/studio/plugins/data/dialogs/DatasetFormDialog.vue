@@ -1,34 +1,31 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue"
+import { computed, nextTick, reactive, ref } from "vue"
 import {
   ElButton,
-  ElCol,
   ElDatePicker,
   ElForm,
   ElFormItem,
   ElInput,
+  ElMessage,
   ElOption,
   ElRadioButton,
   ElRadioGroup,
-  ElRow,
   ElSelect,
 } from "element-plus"
 
-import { createDataset, getDataCenterFilters, getDataProducts } from "@/lib/dataCenterApi"
-import type { DataProduct, FilterOption } from "@/types"
+import DataProductFormDialog from "@/components/studio/plugins/data/dialogs/DataProductFormDialog.vue"
+import { createDataset, getDataProducts, getStorageBuckets } from "@/lib/dataCenterApi"
+import type { DataProduct, DatasetCreate, StorageBucket } from "@/types"
 
 interface DatasetForm {
-  display_name: string
   product_id: number | null
   region: string
   time_start: string
   time_end: string
-  sample_count: string
-  status: number
-  storage_location_type: number
-  storage_path: string
+  storage_type: "local" | "web"
+  bucket_id: number | null
+  object_prefix: string
   source_url: string
-  agent_summary: string
 }
 
 const emit = defineEmits<{
@@ -40,46 +37,75 @@ const optionLoading = ref(false)
 const submitting = ref(false)
 const submitError = ref("")
 
-const products = ref<DataProduct[]>([])
-const statusOptions = ref<FilterOption[]>([])
+const productOptions = ref<DataProduct[]>([])
+const bucketOptions = ref<StorageBucket[]>([])
+const selectedProduct = ref<DataProduct | null>(null)
+const productFormDialogRef = ref<InstanceType<typeof DataProductFormDialog> | null>(null)
 
-const datasetForm = ref<DatasetForm>(createEmptyDatasetForm())
+const form = reactive<DatasetForm>({
+  product_id: null,
+  region: "",
+  time_start: "",
+  time_end: "",
+  storage_type: "local",
+  bucket_id: null,
+  object_prefix: "",
+  source_url: "",
+})
 
-function createEmptyDatasetForm(): DatasetForm {
-  return {
-    display_name: "",
-    product_id: null,
-    region: "",
-    time_start: "",
-    time_end: "",
-    sample_count: "",
-    status: 3,
-    storage_location_type: 1,
-    storage_path: "",
-    source_url: "",
-    agent_summary: "",
+const timeError = computed(() => {
+  if (form.time_start && form.time_end && form.time_start > form.time_end) {
+    return "开始时间不能晚于结束时间"
   }
-}
+  return ""
+})
 
-async function loadReferenceOptions() {
-  optionLoading.value = true
+const selectedBucket = computed(() =>
+  bucketOptions.value.find((item) => item.id === form.bucket_id) ?? null,
+)
 
-  try {
-    const [productList, filterGroups] = await Promise.all([
-      getDataProducts(),
-      getDataCenterFilters(),
-    ])
-    products.value = productList
-    statusOptions.value = filterGroups.find((group) => group.key === "status")?.items ?? []
-  } catch (error) {
-    console.error("加载数据集表单选项失败：", error)
-  } finally {
-    optionLoading.value = false
+const mountPrefix = computed(() => {
+  const mountPath = selectedBucket.value?.mount_path?.trim()
+  if (!mountPath) return ""
+  return mountPath.endsWith("/") ? mountPath : `${mountPath}/`
+})
+
+const fullLocalPath = computed(() => {
+  if (!mountPrefix.value) return form.object_prefix.trim()
+  return `${mountPrefix.value}${form.object_prefix.trim().replace(/^\/+/, "")}`
+})
+
+const resolutionText = computed(() => {
+  if (!selectedProduct.value?.resolution_value) {
+    return "-"
   }
-}
+  return [selectedProduct.value.resolution_value, selectedProduct.value.resolution_unit]
+    .filter(Boolean)
+    .join(" ")
+})
 
-function resetDatasetForm() {
-  datasetForm.value = createEmptyDatasetForm()
+const storageError = computed(() => {
+  if (form.storage_type === "local") {
+    if (!form.bucket_id) return "请选择 Bucket"
+    if (!selectedBucket.value?.mount_path) return "所选 Bucket 缺少挂载路径"
+    return ""
+  }
+  if (form.storage_type === "web" && !form.source_url.trim()) {
+    return "请填写网站地址"
+  }
+  return ""
+})
+
+function resetForm() {
+  form.product_id = null
+  form.region = ""
+  form.time_start = ""
+  form.time_end = ""
+  form.storage_type = "local"
+  form.bucket_id = null
+  form.object_prefix = ""
+  form.source_url = ""
+  selectedProduct.value = null
   submitError.value = ""
 }
 
@@ -87,20 +113,91 @@ function closeDialog() {
   dialogVisible.value = false
 }
 
-async function openCreateDialog() {
-  resetDatasetForm()
-  dialogVisible.value = true
-
-  if (products.value.length === 0 || statusOptions.value.length === 0) {
-    await loadReferenceOptions()
+function pickDefaultBucket() {
+  if (form.bucket_id && bucketOptions.value.some((item) => item.id === form.bucket_id)) {
+    return
   }
+  const preferred =
+    bucketOptions.value.find((item) => item.is_default && item.is_active) ??
+    bucketOptions.value.find((item) => item.is_active) ??
+    bucketOptions.value[0] ??
+    null
+  form.bucket_id = preferred?.id ?? null
+}
 
+async function loadOptions() {
+  optionLoading.value = true
+  try {
+    const [products, buckets] = await Promise.all([
+      getDataProducts(),
+      getStorageBuckets(true),
+    ])
+    productOptions.value = products
+    bucketOptions.value = buckets.filter((item) => item.id > 0)
+    if (form.storage_type === "local") {
+      pickDefaultBucket()
+    }
+  } catch (error) {
+    console.error("加载入库表单选项失败：", error)
+    productOptions.value = []
+    bucketOptions.value = []
+  } finally {
+    optionLoading.value = false
+  }
+}
+
+function handleProductChange(productId: number | null) {
+  form.product_id = productId
+  selectedProduct.value =
+    productOptions.value.find((item) => item.id === productId) ?? null
+}
+
+function handleStorageTypeChange(value: string | number | boolean | undefined) {
+  if (value !== "local" && value !== "web") return
+  form.storage_type = value
+  submitError.value = ""
+  if (value === "local") {
+    form.source_url = ""
+    pickDefaultBucket()
+  } else {
+    form.bucket_id = null
+    form.object_prefix = ""
+  }
+}
+
+function handleBucketChange(bucketId: number | null) {
+  form.bucket_id = bucketId
+}
+
+async function openCreateDialog() {
+  resetForm()
+  dialogVisible.value = true
+  await loadOptions()
   await nextTick()
 }
 
+function openProductDialog() {
+  productFormDialogRef.value?.openCreateDialog()
+}
+
+async function handleProductCreated(product?: DataProduct) {
+  await loadOptions()
+  if (product?.id) {
+    handleProductChange(product.id)
+  }
+}
+
 async function submitDataset() {
-  if (!datasetForm.value.display_name.trim()) {
-    submitError.value = "请填写数据集名称"
+  if (!form.product_id) {
+    submitError.value = "请选择数据产品"
+    return
+  }
+  if (timeError.value) {
+    submitError.value = timeError.value
+    return
+  }
+  if (storageError.value) {
+    submitError.value = storageError.value
     return
   }
 
@@ -108,33 +205,25 @@ async function submitDataset() {
   submitError.value = ""
 
   try {
-    const sampleCount = datasetForm.value.sample_count
-      ? Number(datasetForm.value.sample_count)
-      : null
-
-    await createDataset({
-      display_name: datasetForm.value.display_name.trim(),
-      product_id: datasetForm.value.product_id,
-      region: datasetForm.value.region || null,
-      time_start: datasetForm.value.time_start || null,
-      time_end: datasetForm.value.time_end || null,
-      sample_count: Number.isFinite(sampleCount) ? sampleCount : null,
-      status: datasetForm.value.status,
-      storage_location_type: datasetForm.value.storage_location_type,
-      storage_path:
-        datasetForm.value.storage_location_type === 1
-          ? datasetForm.value.storage_path || null
+    const payload: DatasetCreate = {
+      product_id: form.product_id,
+      region: form.region.trim() || null,
+      time_start: form.time_start || null,
+      time_end: form.time_end || null,
+      storage_type: form.storage_type,
+      bucket_id: form.storage_type === "local" ? form.bucket_id : null,
+      object_prefix:
+        form.storage_type === "local"
+          ? form.object_prefix.trim().replace(/^\/+/, "") || null
           : null,
-      source_url:
-        datasetForm.value.storage_location_type === 2
-          ? datasetForm.value.source_url || null
-          : null,
-      agent_summary: datasetForm.value.agent_summary || null,
-    })
+      source_url: form.storage_type === "web" ? form.source_url.trim() || null : null,
+    }
 
+    await createDataset(payload)
+    ElMessage.success("数据集创建成功")
     dialogVisible.value = false
     emit("saved")
-    resetDatasetForm()
+    resetForm()
   } catch (error) {
     submitError.value = error instanceof Error ? error.message : "创建数据集失败"
   } finally {
@@ -152,148 +241,178 @@ defineExpose({
     <div class="modal-panel dataset-form-panel">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">新建数据集</h2>
-          <p class="modal-desc">创建数据集实例并挂载到数据产品，对应 POST /api/datasets。</p>
+          <h2 class="modal-title">数据集入库</h2>
+          <p class="modal-desc">选择数据产品、区域时间与存储位置，对应 POST /api/datasets。</p>
         </div>
         <button type="button" class="modal-close" @click="closeDialog">✕</button>
       </div>
 
       <div
         v-loading="optionLoading"
-        class="modal-body"
-        element-loading-text="正在加载基础选项..."
+        class="modal-body dataset-create-page"
+        element-loading-text="正在加载表单选项..."
       >
         <p v-if="submitError" class="modal-error">{{ submitError }}</p>
 
-        <el-form label-position="top" size="default" class="dark-form">
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="数据集名称" required>
-                <el-input
-                  v-model="datasetForm.display_name"
-                  placeholder="例如：浙江省 2025 S2"
-                  clearable
+        <div class="form-panel">
+          <div class="section-header">
+            <h3 class="section-title">入库信息</h3>
+            <button type="button" class="create-product-button" @click="openProductDialog">
+              + 新建数据产品
+            </button>
+          </div>
+
+          <el-form label-position="top" size="default" class="dark-form" @submit.prevent="submitDataset">
+            <el-form-item label="数据产品" required>
+              <el-select
+                :model-value="form.product_id"
+                filterable
+                placeholder="请选择数据产品"
+                style="width: 100%"
+                popper-class="dark-popper"
+                @update:model-value="handleProductChange"
+              >
+                <el-option
+                  v-for="product in productOptions"
+                  :key="product.id"
+                  :label="product.name"
+                  :value="product.id"
                 />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="关联数据产品">
-                <el-select
-                  v-model="datasetForm.product_id"
-                  clearable
-                  filterable
-                  placeholder="可选"
+              </el-select>
+            </el-form-item>
+
+            <el-form-item label="数据区域">
+              <el-input
+                v-model="form.region"
+                type="textarea"
+                :rows="3"
+                placeholder="例如：浙江省杭州市，或填写 GeoJSON/区域描述"
+              />
+            </el-form-item>
+
+            <div class="date-row">
+              <el-form-item label="开始时间">
+                <el-date-picker
+                  v-model="form.time_start"
+                  type="date"
+                  placeholder="选择日期"
+                  value-format="YYYY-MM-DD"
                   style="width: 100%"
                   popper-class="dark-popper"
+                />
+              </el-form-item>
+              <el-form-item label="结束时间">
+                <el-date-picker
+                  v-model="form.time_end"
+                  type="date"
+                  placeholder="选择日期"
+                  value-format="YYYY-MM-DD"
+                  style="width: 100%"
+                  popper-class="dark-popper"
+                />
+              </el-form-item>
+            </div>
+
+            <p v-if="timeError" class="inline-error">{{ timeError }}</p>
+
+            <el-form-item label="存储类型" required>
+              <el-radio-group
+                :model-value="form.storage_type"
+                class="storage-toggle"
+                @update:model-value="handleStorageTypeChange"
+              >
+                <el-radio-button value="local">本地存储</el-radio-button>
+                <el-radio-button value="web">网站链接</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+
+            <template v-if="form.storage_type === 'local'">
+              <el-form-item label="Bucket" required>
+                <el-select
+                  :model-value="form.bucket_id"
+                  filterable
+                  placeholder="请选择 Bucket / 存储卷"
+                  style="width: 100%"
+                  popper-class="dark-popper"
+                  @update:model-value="handleBucketChange"
                 >
                   <el-option
-                    v-for="product in products"
-                    :key="product.id"
-                    :label="product.name"
-                    :value="product.id"
+                    v-for="bucket in bucketOptions"
+                    :key="bucket.id"
+                    :label="`${bucket.bucket_name}${bucket.mount_path ? `（${bucket.mount_path}）` : ''}`"
+                    :value="bucket.id"
                   />
                 </el-select>
               </el-form-item>
-            </el-col>
-          </el-row>
 
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="区域">
-                <el-input v-model="datasetForm.region" placeholder="例如：浙江省" clearable />
+              <el-form-item label="存储路径" required>
+                <div class="path-input">
+                  <span v-if="mountPrefix" class="path-prefix" :title="mountPrefix">{{ mountPrefix }}</span>
+                  <el-input
+                    v-model="form.object_prefix"
+                    class="path-suffix"
+                    :disabled="!form.bucket_id"
+                    placeholder="datasets/public/..."
+                    clearable
+                  />
+                </div>
+                <p v-if="form.bucket_id && mountPrefix" class="path-preview">
+                  完整路径：{{ fullLocalPath || mountPrefix }}
+                </p>
+                <p v-else-if="form.bucket_id && !mountPrefix" class="inline-error">
+                  所选 Bucket 未配置挂载路径
+                </p>
               </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="样本量">
-                <el-input
-                  v-model="datasetForm.sample_count"
-                  type="number"
-                  placeholder="例如：120000"
-                  clearable
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
+            </template>
 
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="开始时间">
-                <el-date-picker
-                  v-model="datasetForm.time_start"
-                  type="date"
-                  placeholder="选择日期"
-                  value-format="YYYY-MM-DD"
-                  style="width: 100%"
-                  popper-class="dark-popper"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="结束时间">
-                <el-date-picker
-                  v-model="datasetForm.time_end"
-                  type="date"
-                  placeholder="选择日期"
-                  value-format="YYYY-MM-DD"
-                  style="width: 100%"
-                  popper-class="dark-popper"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-
-          <el-form-item label="状态">
-            <el-select
-              v-model="datasetForm.status"
-              style="width: 100%"
-              popper-class="dark-popper"
-            >
-              <el-option
-                v-for="item in statusOptions"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
+            <el-form-item v-else label="网站地址" required>
+              <el-input
+                v-model="form.source_url"
+                placeholder="https://..."
+                clearable
               />
-            </el-select>
-          </el-form-item>
+            </el-form-item>
+          </el-form>
+        </div>
 
-          <el-form-item label="存储类型">
-            <el-radio-group v-model="datasetForm.storage_location_type" class="storage-toggle">
-              <el-radio-button :value="1">本地存储</el-radio-button>
-              <el-radio-button :value="2">网站链接</el-radio-button>
-            </el-radio-group>
-          </el-form-item>
-
-          <el-form-item v-if="datasetForm.storage_location_type === 1" label="存储路径">
-            <el-input
-              v-model="datasetForm.storage_path"
-              placeholder="/mnt_llm_A100_V1/datasets/..."
-              clearable
-            />
-          </el-form-item>
-
-          <el-form-item v-else label="网站地址">
-            <el-input v-model="datasetForm.source_url" placeholder="https://..." clearable />
-          </el-form-item>
-
-          <el-form-item label="Agent 摘要">
-            <el-input
-              v-model="datasetForm.agent_summary"
-              type="textarea"
-              :rows="2"
-              placeholder="可选"
-            />
-          </el-form-item>
-        </el-form>
+        <div class="product-detail-panel">
+          <template v-if="selectedProduct">
+            <h3 class="detail-title">{{ selectedProduct.name }}</h3>
+            <dl class="detail-list">
+              <dt>提供方</dt>
+              <dd>{{ selectedProduct.provider || "-" }}</dd>
+              <dt>平台</dt>
+              <dd>{{ selectedProduct.platform || "-" }}</dd>
+              <dt>传感器</dt>
+              <dd>{{ selectedProduct.sensor || "-" }}</dd>
+              <dt>产品级别</dt>
+              <dd>{{ selectedProduct.product_level || "-" }}</dd>
+              <dt>空间分辨率</dt>
+              <dd>{{ resolutionText }}</dd>
+              <dt>数据格式</dt>
+              <dd>{{ selectedProduct.format || "-" }}</dd>
+              <dt>产品描述</dt>
+              <dd>{{ selectedProduct.description || "-" }}</dd>
+            </dl>
+          </template>
+          <div v-else class="empty-product">选择数据产品后，此处显示产品信息</div>
+        </div>
       </div>
 
       <div class="modal-footer dialog-footer">
         <el-button @click="closeDialog">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="submitDataset">
-          {{ submitting ? "提交中..." : "提交" }}
+        <el-button
+          type="primary"
+          :loading="submitting"
+          :disabled="Boolean(timeError) || Boolean(storageError) || !form.product_id"
+          @click="submitDataset"
+        >
+          {{ submitting ? "正在创建..." : "创建数据集" }}
         </el-button>
       </div>
     </div>
+
+    <DataProductFormDialog ref="productFormDialogRef" @saved="handleProductCreated" />
   </div>
 </template>
 
@@ -313,7 +432,7 @@ defineExpose({
 
 .modal-panel {
   width: 100%;
-  max-width: 720px;
+  max-width: 980px;
   border-radius: 28px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: linear-gradient(180deg, rgba(11, 20, 38, 0.98), rgba(7, 14, 28, 0.98));
@@ -362,20 +481,154 @@ defineExpose({
 }
 
 .modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   padding: 24px 28px;
 }
 
+.dataset-create-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
 .modal-error {
-  margin: 0 0 16px;
+  grid-column: 1 / -1;
+  margin: 0;
   padding: 10px 12px;
   border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: 6px;
   background: rgba(239, 68, 68, 0.08);
   color: #f87171;
   font-size: 14px;
+}
+
+.form-panel,
+.product-detail-panel {
+  border: 1px solid rgba(121, 167, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(2, 8, 21, 0.28);
+  padding: 18px;
+  min-height: 360px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #e8f4ff;
+}
+
+.create-product-button {
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #9fe8ff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.create-product-button:hover {
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.inline-error {
+  margin: -4px 0 0;
+  color: #f87171;
+  font-size: 13px;
+}
+
+.path-input {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(121, 167, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(2, 8, 21, 0.4);
+}
+
+.path-prefix {
+  max-width: 46%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  background: rgba(56, 189, 248, 0.1);
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid rgba(121, 167, 255, 0.18);
+}
+
+.path-suffix {
+  flex: 1;
+  min-width: 0;
+}
+
+.path-preview {
+  margin: 8px 0 0;
+  color: #93c5fd;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.detail-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px 12px;
+  margin: 0;
+}
+
+.detail-list dt {
+  color: #7f92a9;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detail-list dd {
+  margin: 0;
+  color: #d9edff;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.empty-product {
+  height: 100%;
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  color: #7f92a9;
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
 }
 
 .modal-footer {
@@ -388,40 +641,15 @@ defineExpose({
   gap: 12px;
 }
 
-.dark-form :deep(.el-radio-group.storage-toggle) {
-  display: flex;
-  gap: 12px;
-}
+@media (max-width: 860px) {
+  .dataset-create-page,
+  .date-row {
+    grid-template-columns: 1fr;
+  }
 
-.dark-form :deep(.el-radio-group.storage-toggle .el-radio-button__inner) {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 24px !important;
-  min-width: 120px;
-  justify-content: center;
-  font-size: 14px;
-  letter-spacing: 0.02em;
-  transition: all 0.25s ease;
-  border: 1px solid rgba(121, 167, 255, 0.2) !important;
-  background: rgba(2, 8, 21, 0.3) !important;
-  border-radius: 999px !important;
-  color: #c7e9ff !important;
-  font-weight: 700;
-}
-
-.dark-form :deep(.el-radio-group.storage-toggle .el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
-  background: rgba(59, 130, 246, 0.12) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  transform: translateY(-1px);
-}
-
-.dark-form :deep(.el-radio-group.storage-toggle .el-radio-button.is-active .el-radio-button__inner) {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.15)) !important;
-  border-color: #3b82f6 !important;
-  box-shadow:
-    0 0 24px rgba(59, 130, 246, 0.18),
-    0 0 0 1px rgba(59, 130, 246, 0.35) !important;
+  .path-prefix {
+    max-width: 40%;
+  }
 }
 </style>
 
@@ -456,12 +684,23 @@ defineExpose({
   box-shadow: none !important;
 }
 
+.dataset-form-panel .dark-form .path-input .el-input__wrapper {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 .dataset-form-panel .dark-form .el-input__wrapper.is-focus,
 .dataset-form-panel .dark-form .el-select .el-input__wrapper.is-focus,
 .dataset-form-panel .dark-form .el-select__wrapper.is-focused,
 .dataset-form-panel .dark-form .el-select__wrapper:hover {
   border-color: rgba(96, 165, 250, 0.5);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.dataset-form-panel .dark-form .path-input .el-input__wrapper.is-focus {
+  box-shadow: none !important;
 }
 
 .dataset-form-panel .dark-form .el-input__inner,
@@ -497,6 +736,35 @@ defineExpose({
 
 .dataset-form-panel .dark-form .el-date-editor {
   --el-date-editor-width: 100%;
+}
+
+.dataset-form-panel .dark-form .el-radio-group.storage-toggle {
+  display: flex;
+  gap: 12px;
+}
+
+.dataset-form-panel .dark-form .el-radio-group.storage-toggle .el-radio-button__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 10px 24px !important;
+  border: 1px solid rgba(121, 167, 255, 0.2) !important;
+  border-radius: 999px !important;
+  background: rgba(2, 8, 21, 0.3) !important;
+  color: #c7e9ff !important;
+  font-weight: 700;
+  box-shadow: none !important;
+}
+
+.dataset-form-panel .dark-form .el-radio-group.storage-toggle .el-radio-button:not(.is-active) .el-radio-button__inner:hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+.dataset-form-panel .dark-form .el-radio-group.storage-toggle .el-radio-button.is-active .el-radio-button__inner {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.15)) !important;
+  border-color: #3b82f6 !important;
 }
 
 .dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon {
