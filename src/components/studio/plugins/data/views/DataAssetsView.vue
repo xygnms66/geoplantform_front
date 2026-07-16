@@ -287,11 +287,12 @@ a.small-btn {
 
 .asset-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
 .asset-card {
+  min-width: 0;
   padding: 18px;
   border: 1px solid rgba(121, 167, 255, 0.13);
   border-radius: 20px;
@@ -348,6 +349,7 @@ a.small-btn {
   padding: 12px;
   border-radius: 14px;
   background: rgba(15, 32, 56, 0.48);
+  min-width: 0;
 }
 
 .meta-grid span {
@@ -423,6 +425,9 @@ a.small-btn {
   font-family: Consolas, "SFMono-Regular", monospace;
   font-size: 12px;
   background: rgba(2, 8, 21, 0.35);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .asset-actions {
@@ -432,14 +437,31 @@ a.small-btn {
   margin-top: 14px;
 }
 
-@media (max-width: 1280px) {
-  .summary-grid,
+@media (max-width: 1500px) {
   .asset-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1280px) {
+  .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .asset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .meta-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 760px) {
+  .asset-grid {
+    grid-template-columns: 1fr;
+  }
+
   .asset-search {
     width: 100%;
   }

@@ -422,17 +422,19 @@ defineExpose({
   inset: 0;
   z-index: 50;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 60px 24px;
   background: rgba(2, 6, 23, 0.7);
   backdrop-filter: blur(6px);
-  overflow-y: auto;
 }
 
 .modal-panel {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 980px;
+  max-height: calc(100vh - 120px);
   border-radius: 28px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: linear-gradient(180deg, rgba(11, 20, 38, 0.98), rgba(7, 14, 28, 0.98));
@@ -481,6 +483,8 @@ defineExpose({
 }
 
 .modal-body {
+  flex: 1;
+  overflow-y: auto;
   padding: 24px 28px;
 }
 

@@ -110,7 +110,7 @@ onMounted(() => {
               :disabled="deletingId === product.id"
               @click="handleDelete(product)"
             >
-              {{ deletingId === product.id ? "删除中…" : "删除" }}
+              {{ deletingId === product.id ? "删除中…" : "🗑 删除" }}
             </button>
           </span>
         </div>
@@ -243,11 +243,14 @@ onMounted(() => {
 
 .op-btn.danger {
   color: #fecaca;
-  background: rgba(239, 68, 68, 0.16);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.12));
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .op-btn.danger:hover {
-  background: rgba(239, 68, 68, 0.26);
+  color: #fff;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.45), rgba(220, 38, 38, 0.3));
+  border-color: rgba(239, 68, 68, 0.45);
 }
 
 .op-btn:disabled {

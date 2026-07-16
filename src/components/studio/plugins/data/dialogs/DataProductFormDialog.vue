@@ -569,12 +569,11 @@ defineExpose({
   inset: 0;
   z-index: 60;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 60px 24px;
   background: rgba(2, 6, 23, 0.7);
   backdrop-filter: blur(6px);
-  overflow-y: auto;
 }
 
 .modal-panel {
@@ -588,7 +587,15 @@ defineExpose({
 }
 
 .product-form-panel {
+  display: flex;
+  flex-direction: column;
   max-width: 860px;
+  max-height: calc(100vh - 120px);
+}
+
+.product-form-panel .modal-body {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .modal-header {

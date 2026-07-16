@@ -325,7 +325,7 @@ watch([activeSource, activeFilters], loadCards, { deep: true });
 
 .data-layout {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 20px;
 }
 

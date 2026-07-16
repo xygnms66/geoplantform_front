@@ -57,7 +57,6 @@ const activeComponent = computed<Component>(() => {
 .workspace-layout {
   margin-top: 28px;
   padding: 0 20px 40px;
-  min-height: calc(100vh - 180px);
 }
 
 .content-area {

@@ -26,45 +26,50 @@ function isFilterActive(
 <template>
   <aside class="filter-panel panel">
     <div class="panel-inner">
-      <h2 class="panel-title">数据筛选</h2>
-      <div class="filter-group">
-        <div class="filter-title">数据来源</div>
-        <button
-          type="button"
-          :class="['filter-chip', { active: activeSource === 'all' }]"
-          @click="emit('update:activeSource', 'all')"
-        >
-          全部数据
-        </button>
-        <button
-          v-for="source in sources"
-          :key="source.key"
-          type="button"
-          :class="['filter-chip', { active: activeSource === source.key }]"
-          @click="emit('update:activeSource', source.key)"
-        >
-          {{ source.icon }} {{ source.name }}
-        </button>
-      </div>
-      <div v-for="group in filters" :key="group.key" class="filter-group">
-        <div class="filter-title">{{ group.title }}</div>
-        <button
-          v-for="item in group.items"
-          :key="item.id"
-          type="button"
-          :class="['filter-chip', 'small', { active: isFilterActive(activeFilters, group.key, item) }]"
-          @click="emit('toggleFilter', group.key, item)"
-        >
-          {{ item.name }}
-        </button>
-      </div>
+      <section class="rail-section">
+        <h2>数据来源</h2>
+        <div class="source-list">
+          <button
+            type="button"
+            :class="['source-card', { 'source-active': activeSource === 'all' }]"
+            @click="emit('update:activeSource', 'all')"
+          >
+            <span class="source-icon">📦</span>
+            <span><strong>全部数据</strong><em>已有与候选数据</em></span>
+          </button>
+          <button
+            v-for="source in sources"
+            :key="source.key"
+            type="button"
+            :class="['source-card', { 'source-active': activeSource === source.key }]"
+            @click="emit('update:activeSource', source.key)"
+          >
+            <span class="source-icon">{{ source.icon }}</span>
+            <span><strong>{{ source.name }}</strong><em>{{ source.subtitle }}</em></span>
+          </button>
+        </div>
+      </section>
+      <section v-for="group in filters" :key="group.key" class="rail-section">
+        <h2>{{ group.title }}</h2>
+        <div class="filter-pills">
+          <button
+            v-for="item in group.items"
+            :key="item.id"
+            type="button"
+            :class="['filter-pill', { 'pill-active': isFilterActive(activeFilters, group.key, item) }]"
+            @click="emit('toggleFilter', group.key, item)"
+          >
+            {{ item.name }}
+          </button>
+        </div>
+      </section>
       <button
         v-if="activeSource !== 'all' || activeFilters.length > 0"
         type="button"
-        class="filter-clear-btn"
+        class="clear-btn"
         @click="emit('clearFilters')"
       >
-        清空筛选
+        清除筛选
       </button>
     </div>
   </aside>
@@ -81,12 +86,8 @@ function isFilterActive(
 
 .panel-inner {
   padding: 20px;
-}
-
-.panel-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 900;
+  display: grid;
+  gap: 24px;
 }
 
 .filter-panel {
@@ -95,59 +96,128 @@ function isFilterActive(
   top: 78px;
 }
 
-.filter-group {
-  margin-top: 24px;
+.rail-section h2 {
+  position: relative;
+  margin: 0 0 12px;
+  padding-left: 16px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-.filter-title {
-  margin-bottom: 10px;
-  color: #c9d9eb;
-  font-weight: 900;
-}
-
-.filter-chip {
-  width: 100%;
-  min-height: 46px;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  margin-bottom: 10px;
-  border: 1px solid rgba(121, 167, 255, 0.15);
-  border-radius: 14px;
-  color: #d9edff;
-  text-align: left;
-  background: rgba(2, 8, 21, 0.28);
-  cursor: pointer;
-  transition: 0.18s ease;
-  font: inherit;
-}
-
-.filter-chip.active {
-  border-color: rgba(103, 232, 249, 0.42);
-  color: #67e8f9;
-  background: rgba(59, 130, 246, 0.2);
-}
-
-.filter-chip.small {
-  width: auto;
-  min-height: 34px;
-  display: inline-flex;
-  margin: 0 8px 8px 0;
+.rail-section h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 4px;
+  height: 14px;
   border-radius: 999px;
+  background: linear-gradient(180deg, #38bdf8, #818cf8);
 }
 
-.filter-clear-btn {
-  width: 100%;
-  min-height: 38px;
-  margin-top: 8px;
-  border: 1px solid rgba(103, 232, 249, 0.28);
-  border-radius: 12px;
-  color: #67e8f9;
-  background: rgba(59, 130, 246, 0.12);
+.source-list {
+  display: grid;
+  gap: 8px;
+}
+
+.source-card {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 8px;
+  align-items: center;
+  min-height: 50px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
   font: inherit;
-  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition:
+    border-color 0.18s,
+    background 0.18s;
+}
+
+.source-card:hover,
+.source-active {
+  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.source-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.source-card strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.source-card em {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.filter-pill {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 999px;
+  transition:
+    border-color 0.18s,
+    color 0.18s,
+    background 0.18s;
+}
+
+.filter-pill:hover,
+.pill-active {
+  color: #bfdbfe;
+  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.clear-btn {
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: color 0.18s;
+}
+
+.clear-btn:hover {
+  color: #bfdbfe;
 }
 
 @media (max-width: 1280px) {
