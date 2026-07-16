@@ -809,4 +809,18 @@ defineExpose({
   line-height: 1.4;
   white-space: normal;
 }
+
+.product-form-panel .dark-form .el-input__count,
+.product-form-panel .dark-form .el-textarea__count {
+  background: transparent !important;
+}
+
+.product-form-panel .dark-form .el-input__count-inner,
+.product-form-panel .dark-form .el-textarea__count-inner {
+  background: rgba(2, 8, 21, 0.6) !important;
+  color: #8aa0b8 !important;
+  border-radius: 6px;
+  padding: 1px 8px;
+  font-size: 12px;
+}
 </style>

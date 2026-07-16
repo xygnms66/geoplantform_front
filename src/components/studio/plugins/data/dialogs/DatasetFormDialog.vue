@@ -770,4 +770,79 @@ defineExpose({
 .dark-popper .el-select-dropdown__item.is-selected .el-select-dropdown__option-icon {
   color: #4ade80 !important;
 }
+
+/* date picker 下拉面板深色 */
+.dataset-form-panel .dark-form .el-picker-panel,
+.dataset-form-panel .dark-form .el-date-picker__header,
+.dataset-form-panel .dark-form .el-date-table th {
+  background: rgba(7, 14, 28, 0.98) !important;
+  color: #d9edff !important;
+  border-color: rgba(121, 167, 255, 0.18) !important;
+}
+
+.dataset-form-panel .dark-form .el-date-table td .el-date-table-cell {
+  background: transparent !important;
+}
+
+.dataset-form-panel .dark-form .el-date-table td .el-date-table-cell__text {
+  color: #d9edff !important;
+}
+
+.dataset-form-panel .dark-form .el-date-table td.today .el-date-table-cell__text {
+  color: #60a5fa !important;
+  font-weight: 800;
+}
+
+.dataset-form-panel .dark-form .el-date-table td.current:not(.disabled) .el-date-table-cell__text {
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+
+.dataset-form-panel .dark-form .el-date-table td:not(.disabled):hover .el-date-table-cell__text {
+  background: rgba(59, 130, 246, 0.25) !important;
+  border-radius: 50%;
+}
+
+.dataset-form-panel .dark-form .el-date-table td.disabled .el-date-table-cell__text {
+  color: #4a5568 !important;
+}
+
+.dataset-form-panel .dark-form .el-year-table td .el-year-table-cell__text,
+.dataset-form-panel .dark-form .el-month-table td .el-month-table-cell__text {
+  color: #d9edff !important;
+}
+
+.dataset-form-panel .dark-form .el-year-table td.current:not(.disabled) .el-year-table-cell__text,
+.dataset-form-panel .dark-form .el-month-table td.current:not(.disabled) .el-month-table-cell__text {
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-radius: 24px;
+}
+
+.dataset-form-panel .dark-form .el-year-table td:not(.disabled):hover .el-year-table-cell__text,
+.dataset-form-panel .dark-form .el-month-table td:not(.disabled):hover .el-month-table-cell__text {
+  background: rgba(59, 130, 246, 0.25) !important;
+  border-radius: 24px;
+}
+
+.dataset-form-panel .dark-form .el-date-picker__header-label {
+  color: #d9edff !important;
+}
+
+.dataset-form-panel .dark-form .el-date-picker__header-label:hover {
+  color: #60a5fa !important;
+}
+
+.dataset-form-panel .dark-form .el-picker-panel__icon-btn {
+  color: #94a3b8 !important;
+}
+
+.dataset-form-panel .dark-form .el-picker-panel__icon-btn:hover {
+  color: #60a5fa !important;
+}
+
+.dataset-form-panel .dark-form .el-date-picker {
+  --el-border-color: rgba(121, 167, 255, 0.18);
+}
 </style>

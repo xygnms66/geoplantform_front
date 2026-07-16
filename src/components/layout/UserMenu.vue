@@ -283,25 +283,24 @@ async function handleChangePwd() {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 100;
+  z-index: 60;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px;
-  background: rgba(2, 6, 23, 0.85);
-  backdrop-filter: blur(8px);
+  padding: 60px 24px;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(6px);
   overflow-y: auto;
 }
 
 .change-pwd-panel {
   width: 100%;
   max-width: 420px;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  background: #0f1729;
-  box-shadow:
-    0 32px 80px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(56, 189, 248, 0.08) inset;
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(180deg, rgba(11, 20, 38, 0.98), rgba(7, 14, 28, 0.98));
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
 }
 
 .modal-header {

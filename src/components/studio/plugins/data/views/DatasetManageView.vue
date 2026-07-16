@@ -556,3 +556,146 @@ onMounted(() => {
   }
 }
 </style>
+
+<style>
+/* ElDialog 深色主题 - 编辑数据集 & 转移资产 */
+.dataset-manage-dialog {
+  --el-dialog-bg-color: rgba(11, 20, 38, 0.98) !important;
+  --el-dialog-title-font-size: 20px;
+  --el-dialog-content-font-size: 14px;
+}
+
+.dataset-manage-dialog .el-dialog {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 28px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
+}
+
+.dataset-manage-dialog .el-dialog__header {
+  padding: 24px 28px 0;
+  border-bottom: 0;
+}
+
+.dataset-manage-dialog .el-dialog__title {
+  color: #f8fbff;
+  font-weight: 900;
+}
+
+.dataset-manage-dialog .el-dialog__headerbtn {
+  top: 24px;
+  right: 28px;
+}
+
+.dataset-manage-dialog .el-dialog__headerbtn .el-dialog__close {
+  color: #94a3b8;
+  font-size: 18px;
+}
+
+.dataset-manage-dialog .el-dialog__headerbtn:hover .el-dialog__close {
+  color: #fca5a5;
+}
+
+.dataset-manage-dialog .el-dialog__body {
+  padding: 20px 28px;
+  color: #d9edff;
+}
+
+.dataset-manage-dialog .el-dialog__footer {
+  padding: 0 28px 24px;
+  border-top: 0;
+}
+
+/* dark-form inside dialog */
+.dataset-manage-dialog .dark-form {
+  --el-fill-color: rgba(2, 8, 21, 0.4);
+  --el-fill-color-light: rgba(10, 24, 44, 0.6);
+  --el-fill-color-lighter: rgba(2, 8, 21, 0.3);
+  --el-border-color: rgba(121, 167, 255, 0.18);
+  --el-border-color-light: rgba(148, 163, 184, 0.18);
+  --el-text-color-primary: #f8fbff;
+  --el-text-color-regular: #d9edff;
+  --el-text-color-placeholder: #7f92a9;
+  --el-bg-color: transparent;
+  --el-bg-color-overlay: rgba(7, 14, 28, 0.98);
+  --el-input-bg-color: rgba(2, 8, 21, 0.4);
+}
+
+.dataset-manage-dialog .dark-form .el-form-item__label {
+  color: #c9d9eb;
+  font-weight: 800;
+  font-size: 13px;
+  padding-bottom: 4px;
+}
+
+.dataset-manage-dialog .dark-form .el-input__wrapper,
+.dataset-manage-dialog .dark-form .el-select .el-input__wrapper,
+.dataset-manage-dialog .dark-form .el-select__wrapper {
+  background: rgba(2, 8, 21, 0.4) !important;
+  border: 1px solid rgba(121, 167, 255, 0.18);
+  border-radius: 12px;
+  box-shadow: none !important;
+}
+
+.dataset-manage-dialog .dark-form .el-input__wrapper.is-focus,
+.dataset-manage-dialog .dark-form .el-select .el-input__wrapper.is-focus,
+.dataset-manage-dialog .dark-form .el-select__wrapper.is-focused,
+.dataset-manage-dialog .dark-form .el-select__wrapper:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.dataset-manage-dialog .dark-form .el-input__inner,
+.dataset-manage-dialog .dark-form .el-select__selected-item,
+.dataset-manage-dialog .dark-form .el-select__placeholder,
+.dataset-manage-dialog .dark-form .el-select__tags-text,
+.dataset-manage-dialog .dark-form .el-select__input-wrapper,
+.dataset-manage-dialog .dark-form .el-select__caret {
+  color: #f8fbff !important;
+}
+
+.dataset-manage-dialog .dark-form .el-select__placeholder.is-transparent {
+  color: #7f92a9 !important;
+}
+
+.dataset-manage-dialog .dark-form .el-textarea__inner {
+  background: rgba(2, 8, 21, 0.4) !important;
+  border: 1px solid rgba(121, 167, 255, 0.18);
+  border-radius: 12px;
+  color: #f8fbff !important;
+  box-shadow: none !important;
+}
+
+.dataset-manage-dialog .dark-form .el-textarea__inner:focus {
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.dataset-manage-dialog .dark-form .el-select__wrapper {
+  min-height: 42px;
+  padding: 1px 11px;
+}
+
+.dataset-manage-dialog .el-picker-panel,
+.dataset-manage-dialog .el-date-picker__header,
+.dataset-manage-dialog .el-date-table th {
+  background: rgba(7, 14, 28, 0.98) !important;
+  color: #d9edff !important;
+  border-color: rgba(121, 167, 255, 0.18) !important;
+}
+
+.dataset-manage-dialog .el-date-table td .el-date-table-cell__text {
+  color: #d9edff !important;
+}
+
+.dataset-manage-dialog .el-date-table td.current:not(.disabled) .el-date-table-cell__text {
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-radius: 50%;
+}
+
+.dataset-manage-dialog .el-date-table td:not(.disabled):hover .el-date-table-cell__text {
+  background: rgba(59, 130, 246, 0.25) !important;
+  border-radius: 50%;
+}
+</style>

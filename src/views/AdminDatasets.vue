@@ -7,6 +7,41 @@ import { getToken } from "@/lib/auth";
 const router = useRouter();
 const auth = useAuthStore();
 
+// ==================================
+// MOCK START - 开发用，上线删除本块
+// ==================================
+import { dataCatalogCards } from "@/lib/dataCenterStaticData";
+
+const MOCK_CANDIDATES = dataCatalogCards.map((c) => ({
+  id: c.id,
+  title: c.title,
+  source: c.source,
+  sourceName: c.sourceName,
+  description: c.description,
+  domain: c.domain,
+  status: c.status === "可用" ? "in_use" : "candidate",
+  modality: c.modality,
+  scope: c.scope,
+  projects: c.projects,
+  storageStatus: c.storageStatus === "本地存储" ? "stored" : c.storageStatus,
+  storagePath: c.storagePath,
+  url: c.url,
+}));
+
+const MOCK_STATISTICS = {
+  total: dataCatalogCards.length,
+  by_status: { candidate: 3, in_use: 7, archived: 0 },
+  by_source: { georemote: 7, gee: 2, paper: 1 },
+  by_domain: { "遥感预训练": 4, "地形建模": 1, "农业遥感": 1, "土地覆盖": 1, "遥感嵌入": 1, "开放矢量数据": 1, "森林与生态遥感": 1 },
+};
+
+function isMockMode(): boolean {
+  return import.meta.env.VITE_USE_MOCK === "true" || import.meta.env.VITE_USE_MOCK === "1";
+}
+// ==================================
+// MOCK END（上面这块和下面 fetchData 里的 if(isMockMode) 一起删）
+// ==================================
+
 interface DatasetCandidate {
   id: number;
   title: string;
@@ -52,6 +87,15 @@ const unwatch = auth.$subscribe(() => {
 });
 
 async function fetchData() {
+  // ========== MOCK START ==========
+  if (isMockMode()) {
+    datasets.value = MOCK_CANDIDATES;
+    statistics.value = MOCK_STATISTICS;
+    dataLoading.value = false;
+    return;
+  }
+  // ========== MOCK END ==========
+
   const token = getToken();
   if (!token) {
     error.value = "未登录";

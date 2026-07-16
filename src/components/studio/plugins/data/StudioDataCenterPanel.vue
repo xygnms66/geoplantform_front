@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import DataProductFormDialog from "@/components/studio/plugins/data/dialogs/DataProductFormDialog.vue";
 import DatasetFormDialog from "@/components/studio/plugins/data/dialogs/DatasetFormDialog.vue";
 import DataFilterAside from "@/components/studio/plugins/data/shared/DataFilterAside.vue";
@@ -42,6 +42,23 @@ async function handleDatasetSaved() {
 }
 
 const { tabs, activeTab, activeView, setActiveTab } = useStudioPluginTabs(dataPluginTabs, "assets");
+
+const tabBarRef = ref<HTMLElement | null>(null);
+const tabRefs = ref<HTMLElement[]>([]);
+const indicatorStyle = ref({ width: "0px", transform: "translateX(0px)" });
+
+function updateIndicator() {
+  const idx = tabs.findIndex((t) => t.key === activeTab.value);
+  const el = tabRefs.value[idx];
+  if (!el || !tabBarRef.value) return;
+  indicatorStyle.value = {
+    width: `${el.offsetWidth}px`,
+    transform: `translateX(${el.offsetLeft}px) translateY(-50%)`,
+  };
+}
+
+watch(activeTab, () => nextTick(updateIndicator));
+onMounted(() => nextTick(updateIndicator));
 
 const activeSource = ref<DataSourceKey | "all">("all");
 const activeFilters = ref<ActiveCatalogFilter[]>([]);
@@ -125,10 +142,15 @@ watch([activeSource, activeFilters], loadCards, { deep: true });
       </div>
     </section>
 
-    <section class="data-tabs panel">
+    <section class="data-tabs panel" ref="tabBarRef">
+      <div
+        class="tab-indicator"
+        :style="indicatorStyle"
+      />
       <button
         v-for="tab in tabs"
         :key="tab.key"
+        ref="tabRefs"
         :class="{ active: activeTab === tab.key }"
         type="button"
         @click="setActiveTab(tab.key)"
@@ -233,24 +255,72 @@ watch([activeSource, activeFilters], loadCards, { deep: true });
 }
 
 .data-tabs {
+  position: relative;
   display: flex;
-  gap: 8px;
-  padding: 8px;
+  gap: 2px;
+  padding: 6px;
   width: fit-content;
+  isolation: isolate;
+}
+
+.tab-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 32px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.35), rgba(37, 99, 235, 0.25));
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  box-shadow:
+    0 0 24px rgba(14, 165, 233, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  transition: all 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .data-tabs button {
+  position: relative;
+  z-index: 1;
   height: 38px;
-  padding: 0 16px;
-  border-radius: 12px;
-  color: var(--muted);
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  color: #7f92a9;
   background: transparent;
-  font-weight: 850;
+  cursor: pointer;
+  font-weight: 750;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: color 0.25s ease;
+  animation: tabFadeIn 0.4s ease backwards;
+}
+
+.data-tabs button:nth-child(2) { animation-delay: 0.03s; }
+.data-tabs button:nth-child(3) { animation-delay: 0.06s; }
+.data-tabs button:nth-child(4) { animation-delay: 0.09s; }
+.data-tabs button:nth-child(5) { animation-delay: 0.12s; }
+.data-tabs button:nth-child(6) { animation-delay: 0.15s; }
+.data-tabs button:nth-child(7) { animation-delay: 0.18s; }
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.data-tabs button:hover {
+  color: #bfd9ff;
 }
 
 .data-tabs button.active {
   color: #fff;
-  background: rgba(59, 130, 246, 0.72);
 }
 
 .data-layout {
