@@ -4,6 +4,7 @@ import dataPlugin from "@/components/studio/plugins/data";
 import type { StudioPlugin, StudioPluginKey } from "./plugin-types";
 
 export type { StudioPlugin, StudioPluginKey, StudioPluginTab } from "./plugin-types";
+export { useStudioPluginTabs } from "./useStudioPluginTabs";
 
 export const studioPlugins: StudioPlugin[] = [dashboardPlugin, projectsPlugin, dataPlugin];
 

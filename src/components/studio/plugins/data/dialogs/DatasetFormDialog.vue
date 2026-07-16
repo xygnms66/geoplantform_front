@@ -242,7 +242,7 @@ defineExpose({
       <div class="modal-header">
         <div>
           <h2 class="modal-title">数据集入库</h2>
-          <p class="modal-desc">选择数据产品、区域时间与存储位置，对应 POST /api/datasets。</p>
+          <p class="modal-desc">选择数据产品，填写数据集覆盖的区域、时间与存储位置。</p>
         </div>
         <button type="button" class="modal-close" @click="closeDialog">✕</button>
       </div>

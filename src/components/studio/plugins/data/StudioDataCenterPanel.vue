@@ -3,12 +3,8 @@ import { computed, onMounted, ref, watch } from "vue";
 import DataProductFormDialog from "@/components/studio/plugins/data/dialogs/DataProductFormDialog.vue";
 import DatasetFormDialog from "@/components/studio/plugins/data/dialogs/DatasetFormDialog.vue";
 import DataFilterAside from "@/components/studio/plugins/data/shared/DataFilterAside.vue";
-import DataAssetsView from "@/components/studio/plugins/data/views/DataAssetsView.vue";
-import ObjectStorageView from "@/components/studio/plugins/data/views/ObjectStorageView.vue";
-import InboxReviewView from "@/components/studio/plugins/data/views/InboxReviewView.vue";
-import DataQualityView from "@/components/studio/plugins/data/views/DataQualityView.vue";
-import DataLineageView from "@/components/studio/plugins/data/views/DataLineageView.vue";
 import { dataPluginTabs } from "@/components/studio/plugins/data/tabs";
+import { useStudioPluginTabs } from "@/components/studio/shell/useStudioPluginTabs";
 import {
   FILTER_FALLBACK,
   fetchDataCatalogCards,
@@ -45,8 +41,7 @@ async function handleDatasetSaved() {
   await loadCards();
 }
 
-const tabs = dataPluginTabs;
-const activeTab = ref(tabs[0]?.key ?? "assets");
+const { tabs, activeTab, activeView, setActiveTab } = useStudioPluginTabs(dataPluginTabs, "assets");
 
 const activeSource = ref<DataSourceKey | "all">("all");
 const activeFilters = ref<ActiveCatalogFilter[]>([]);
@@ -56,6 +51,13 @@ const sources = ref<DataSourceCard[]>(dataSourceFallback);
 const filters = ref<DataFilterGroup[]>(FILTER_FALLBACK);
 
 const showAssetFilters = computed(() => activeTab.value === "assets");
+
+const activeViewProps = computed(() => {
+  if (activeTab.value === "assets") {
+    return { cards: cards.value };
+  }
+  return {};
+});
 
 function buildCatalogFilter(): DataCatalogFilter {
   const filter: DataCatalogFilter = {};
@@ -129,7 +131,7 @@ watch([activeSource, activeFilters], loadCards, { deep: true });
         :key="tab.key"
         :class="{ active: activeTab === tab.key }"
         type="button"
-        @click="activeTab = tab.key"
+        @click="setActiveTab(tab.key)"
       >
         {{ tab.label }}
       </button>
@@ -147,11 +149,8 @@ watch([activeSource, activeFilters], loadCards, { deep: true });
         @clear-filters="clearFilters"
       />
 
-      <DataAssetsView v-if="activeTab === 'assets'" :cards="cards" />
-      <ObjectStorageView v-else-if="activeTab === 'storage'" />
-      <InboxReviewView v-else-if="activeTab === 'inbox'" />
-      <DataQualityView v-else-if="activeTab === 'quality'" />
-      <DataLineageView v-else />
+      <component :is="activeView" v-if="activeView" v-bind="activeViewProps" />
+      <div v-else class="empty-view">当前 Tab 未配置页面组件</div>
     </section>
 
     <DataProductFormDialog ref="productFormDialogRef" @saved="handleProductSaved" />
@@ -262,6 +261,15 @@ watch([activeSource, activeFilters], loadCards, { deep: true });
 
 .data-layout.no-aside {
   grid-template-columns: 1fr;
+}
+
+.empty-view {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border: 1px dashed rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
 }
 
 @media (max-width: 1280px) {

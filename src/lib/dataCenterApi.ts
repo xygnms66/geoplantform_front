@@ -203,6 +203,10 @@ async function fetchJsonOrThrow<T>(path: string, init?: RequestInit): Promise<T>
   if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  const token = getToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     cache: "no-store",
@@ -257,6 +261,12 @@ export function updateDataProduct(productId: number, payload: DataProductCreate)
   return fetchJsonOrThrow<DataProduct>(`/data-products/${productId}`, {
     method: "PUT",
     body: JSON.stringify(payload),
+  });
+}
+
+export function deleteDataProduct(productId: number): Promise<void> {
+  return fetchJsonOrThrow<void>(`/data-products/${productId}`, {
+    method: "DELETE",
   });
 }
 
@@ -332,6 +342,51 @@ export function createDataset(payload: DatasetCreate): Promise<unknown> {
     method: "POST",
     headers,
     body: JSON.stringify(payload),
+  });
+}
+
+export type DatasetRow = {
+  id: number;
+  name: string;
+  product_id: number;
+  product_name?: string | null;
+  region?: string | null;
+  time_start?: string | null;
+  time_end?: string | null;
+  status: string;
+  status_label?: string | null;
+  ingestion_method?: string;
+  storage_status?: string;
+  owner_id?: number | null;
+};
+
+export type DatasetUpdatePayload = {
+  region?: string | null;
+  time_start?: string | null;
+  time_end?: string | null;
+  status?: string;
+};
+
+export function getDatasets(): Promise<DatasetRow[]> {
+  return fetchJsonOrThrow<DatasetRow[]>("/datasets");
+}
+
+export function updateDataset(datasetId: number, payload: DatasetUpdatePayload): Promise<DatasetRow> {
+  return fetchJsonOrThrow<DatasetRow>(`/datasets/${datasetId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteDataset(datasetId: number): Promise<void> {
+  return fetchJsonOrThrow<void>(`/datasets/${datasetId}`, {
+    method: "DELETE",
+  });
+}
+
+export function transferDataset(datasetId: number, newOwnerEmployeeNo: string): Promise<DatasetRow> {
+  return postJsonOrThrow<DatasetRow>(`/datasets/${datasetId}/transfer`, {
+    new_owner_employee_no: newOwnerEmployeeNo,
   });
 }
 

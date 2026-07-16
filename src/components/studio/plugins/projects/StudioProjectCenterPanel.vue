@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { projectsPluginTabs } from "@/components/studio/plugins/projects/tabs";
-import ProjectBoardView from "@/components/studio/plugins/projects/views/ProjectBoardView.vue";
-import ProjectListView from "@/components/studio/plugins/projects/views/ProjectListView.vue";
-import ProjectCycleView from "@/components/studio/plugins/projects/views/ProjectCycleView.vue";
-import ProjectModuleView from "@/components/studio/plugins/projects/views/ProjectModuleView.vue";
-import ProjectDocsView from "@/components/studio/plugins/projects/views/ProjectDocsView.vue";
-import ProjectWorkflowView from "@/components/studio/plugins/projects/views/ProjectWorkflowView.vue";
+import { useStudioPluginTabs } from "@/components/studio/shell/useStudioPluginTabs";
 import { projectModules, projectProjects, projectSummary } from "@/lib/workbenchStudioData";
 
-const tabs = projectsPluginTabs;
-const activeTab = ref("board");
+const { tabs, activeTab, activeView, setActiveTab } = useStudioPluginTabs(projectsPluginTabs, "board");
 const currentProject = ref(projectProjects[0]);
 </script>
 
@@ -47,7 +41,7 @@ const currentProject = ref(projectProjects[0]);
         :key="tab.key"
         :class="{ active: activeTab === tab.key }"
         type="button"
-        @click="activeTab = tab.key"
+        @click="setActiveTab(tab.key)"
       >
         {{ tab.label }}
       </button>
@@ -120,12 +114,8 @@ const currentProject = ref(projectProjects[0]);
           </div>
         </section>
 
-        <ProjectBoardView v-if="activeTab === 'board'" />
-        <ProjectListView v-else-if="activeTab === 'list'" />
-        <ProjectCycleView v-else-if="activeTab === 'cycle'" />
-        <ProjectModuleView v-else-if="activeTab === 'module'" />
-        <ProjectDocsView v-else-if="activeTab === 'docs'" />
-        <ProjectWorkflowView v-else-if="activeTab === 'workflow'" />
+        <component :is="activeView" v-if="activeView" />
+        <div v-else class="empty-view">当前 Tab 未配置页面组件</div>
       </section>
     </section>
   </main>
@@ -389,6 +379,15 @@ const currentProject = ref(projectProjects[0]);
   flex-direction: column;
   gap: 20px;
   min-width: 0;
+}
+
+.empty-view {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border: 1px dashed rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
 }
 
 .project-hero-inner {

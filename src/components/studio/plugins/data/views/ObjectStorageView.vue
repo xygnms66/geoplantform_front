@@ -56,7 +56,6 @@ onMounted(() => {
           <span>挂载协议</span>
           <span>挂载路径</span>
           <span>状态</span>
-          <span>所属后端</span>
           <span>Endpoint</span>
         </div>
         <div v-if="loading && buckets.length === 0" class="storage-row empty-row">加载中…</div>
@@ -74,7 +73,6 @@ onMounted(() => {
               {{ bucket.status }}
             </i>
           </span>
-          <span class="endpoint" :title="bucket.backend_name || ''">{{ bucket.backend_name || "-" }}</span>
           <span class="endpoint" :title="bucket.endpoint_url || ''">{{ bucket.endpoint_url || "-" }}</span>
         </div>
       </div>
@@ -152,8 +150,8 @@ onMounted(() => {
 .storage-row {
   min-height: 54px;
   display: grid;
-  grid-template-columns: 1.1fr 0.55fr 0.7fr 1.1fr 0.7fr 0.95fr 1.2fr;
-  gap: 10px;
+  grid-template-columns: 1.15fr 0.65fr 0.75fr 1.45fr 0.75fr 1.25fr;
+  gap: 12px;
   align-items: center;
   padding: 0 14px;
   border-bottom: 1px solid rgba(121, 167, 255, 0.1);
@@ -198,6 +196,7 @@ onMounted(() => {
 }
 
 .endpoint {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
