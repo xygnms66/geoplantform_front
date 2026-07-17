@@ -36,7 +36,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/public/zhejiang/GEE-download/2025_S2",
+    storagePath: "/data/datasets/sentinel2/zhejiang/2025",
   },
   {
     id: 2,
@@ -61,7 +61,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/public/zhejiang/GEE-download/2025_S1",
+    storagePath: "/data/datasets/sentinel1/zhejiang/2025",
   },
   {
     id: 3,
@@ -86,7 +86,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/public/zhejiang/GEE-download/2025_L89",
+    storagePath: "/data/datasets/landsat/zhejiang/2025",
   },
   {
     id: 4,
@@ -111,7 +111,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/Hangzhou_TimeSeries2025",
+    storagePath: "/data/datasets/rgb/hangzhou",
   },
   {
     id: 5,
@@ -136,7 +136,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/Opensourcedata/SRTM",
+    storagePath: "/data/datasets/dem/srtm",
   },
   {
     id: 6,
@@ -161,7 +161,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/Opensourcedata/olmodata/WorldCereal_2021_Global_Products",
+    storagePath: "/data/datasets/worldcereal/2021",
   },
   {
     id: 7,
@@ -186,7 +186,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/Opensourcedata/olmodata/ESA_WorldCover_10m2021v200/",
+    storagePath: "/data/datasets/worldcover/2021",
   },
   {
     id: 8,
@@ -211,7 +211,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/aef-zhejiang/2024",
+    storagePath: "/data/datasets/embedding/zhejiang/2024",
   },
   {
     id: 9,
@@ -236,7 +236,7 @@ export const dataCatalogCards: DataCatalogCard[] = [
     suitableModels: [],
     status: "可用",
     storageStatus: "本地存储",
-    storagePath: "/mnt_llm_A100_V1/datasets/Opensourcedata/OpenStreetMap",
+    storagePath: "/data/datasets/osm/zhejiang",
   },
   {
     id: 10,

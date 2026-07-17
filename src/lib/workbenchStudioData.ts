@@ -320,7 +320,7 @@ export const dataAssets = [
     resolution: "10m",
     owner: "数据组",
     tags: ["多光谱", "遥感预训练", "GeoTIFF"],
-    path: "s3://georemote/sentinel2/zhejiang/2025/06/",
+    path: "s3://datasets/sentinel2/zhejiang/2025/06/",
     desc: "Sentinel-2 L2A 多光谱地表反射率数据，覆盖浙江省域，主要用于 GeoOrigin 遥感嵌入模型预训练与多时相分析。",
   },
   {
@@ -334,7 +334,7 @@ export const dataAssets = [
     resolution: "10m",
     owner: "数据组",
     tags: ["SAR", "全天候", "VV/VH"],
-    path: "s3://georemote/sentinel1/zhejiang/2025/06/",
+    path: "s3://datasets/sentinel1/zhejiang/2025/06/",
     desc: "Sentinel-1 SAR 后向散射数据，包含 VV、VH 极化信息，可用于全天候地表结构建模、灾害监测与遥感预训练。",
   },
   {
@@ -348,7 +348,7 @@ export const dataAssets = [
     resolution: "0.3m",
     owner: "视觉组",
     tags: ["RGB", "城市", "目标检测"],
-    path: "s3://georemote/rgb/hangzhou/high-resolution/",
+    path: "s3://datasets/rgb/hangzhou/high-resolution/",
     desc: "杭州高分辨率 RGB 影像数据，适用于城市建筑、道路、水体、地块等细粒度地物识别与视觉语言模型训练。",
   },
   {
@@ -362,15 +362,15 @@ export const dataAssets = [
     resolution: "30m",
     owner: "数据组",
     tags: ["DEM", "地形", "高程"],
-    path: "s3://georemote/dem/srtm/china-30m/",
+    path: "s3://datasets/dem/srtm/china-30m/",
     desc: "中国区域 SRTM DEM 高程数据，适合作为生态地理分区、热风险评估和遥感基础模型辅助变量。",
   },
 ];
 
 export const dataStores = [
-  { name: "georemote-main", type: "MinIO", capacity: "597.66TB", endpoint: "stor-georemote-prod.data.storage..." },
-  { name: "geogpt-doc", type: "MinIO", capacity: "400.00TB", endpoint: "stor-geogpt-prod.data.storage..." },
-  { name: "zzb21-89-tokens", type: "NFS", capacity: "0KB", endpoint: "stor-zzb21-89-cbb1e9df..." },
+  { name: "georemote-main", type: "MinIO", capacity: "597.66TB", endpoint: "https://minio.example.com" },
+  { name: "geogpt-doc", type: "MinIO", capacity: "400.00TB", endpoint: "https://minio-doc.example.com" },
+  { name: "zzb21-89-tokens", type: "NFS", capacity: "0KB", endpoint: "nfs://storage.example.com/share" },
 ];
 
 export const dataInbox = [
