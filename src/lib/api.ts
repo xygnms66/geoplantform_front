@@ -3,11 +3,13 @@ import { achievements, dashboardFallback, personalMembers, projects, teamGroups 
 import type { Achievement, DashboardSummary, PersonalMember, Project, TeamGroup } from "@/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
-const responseCache = new Map<string, unknown>();
+const CACHE_TTL = 60_000;
+const responseCache = new Map<string, { data: unknown; timestamp: number }>();
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
-  if (responseCache.has(path)) {
-    return responseCache.get(path) as T;
+  const cached = responseCache.get(path);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data as T;
   }
 
   try {
@@ -25,10 +27,10 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
     }
 
     const data = (await response.json()) as T;
-    responseCache.set(path, data);
+    responseCache.set(path, { data, timestamp: Date.now() });
     return data;
   } catch {
-    responseCache.set(path, fallback);
+    responseCache.set(path, { data: fallback, timestamp: Date.now() });
     return fallback;
   }
 }

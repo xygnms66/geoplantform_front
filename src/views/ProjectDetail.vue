@@ -367,6 +367,7 @@ watch(
                     :key="src"
                     :src="src"
                     :alt="item.name"
+                    loading="lazy"
                     style="width: 100%; border-radius: 10px; object-fit: contain"
                   />
                 </div>
@@ -399,7 +400,7 @@ watch(
                 class="content-block-image"
                 style="margin: 0; display: flex; align-items: center"
               >
-                <img :src="src" :alt="sec.title" style="width: 100%; height: 100%; object-fit: contain" />
+                <img :src="src" :alt="sec.title" loading="lazy" style="width: 100%; height: 100%; object-fit: contain" />
               </div>
             </div>
           </div>

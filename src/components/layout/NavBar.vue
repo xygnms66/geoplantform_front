@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import { ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -17,7 +17,7 @@ const publicNavItems = [
 
 const authNavItems = [{ href: "/workbench", label: "工作台" }];
 
-const allItems = () => (auth.user ? [...publicNavItems, ...authNavItems] : publicNavItems);
+const allItems = computed(() => (auth.user ? [...publicNavItems, ...authNavItems] : publicNavItems));
 
 const animTimers = ref<Map<string, number>>(new Map());
 
@@ -40,11 +40,18 @@ function handleClick(href: string) {
     animTimers.value.set(href, timer);
   }
 }
+
+onBeforeUnmount(() => {
+  for (const timer of animTimers.value.values()) {
+    clearTimeout(timer);
+  }
+  animTimers.value.clear();
+});
 </script>
 
 <template>
   <nav class="nav">
-    <template v-for="item in allItems()" :key="item.href">
+    <template v-for="item in allItems" :key="item.href">
       <router-link
         :to="item.href"
         :data-nav="item.href"

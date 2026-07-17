@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { getPersonalMembers, getProjects, getTeamGroups } from "@/lib/api";
 import type { PersonalMember, Project, TeamGroup } from "@/types";
 import { personalMembers, projects as projectFallback, teamGroups as teamGroupFallback } from "@/lib/staticData";
@@ -17,17 +17,19 @@ onMounted(async () => {
   ]);
 });
 
-const projectNameMap = () => Object.fromEntries(projects.value.map((p) => [p.slug, p.name]));
-const resolveProjects = (slugs?: string[] | null) => slugs?.map((s) => projectNameMap()[s] ?? s);
+const projectNameMap = computed(() => Object.fromEntries(projects.value.map((p) => [p.slug, p.name])));
+const resolveProjects = (slugs?: string[] | null) => slugs?.map((s) => projectNameMap.value[s] ?? s);
 
-const teamLead = () =>
-  rawMembers.value.find((m) => m.isTeamLead || m.role?.includes("团队负责人") || m.title?.includes("团队负责人"));
-const normalMembers = () => rawMembers.value.filter((m) => m.id !== teamLead()?.id);
-const groupedMembers = () =>
+const teamLead = computed(() =>
+  rawMembers.value.find((m) => m.isTeamLead || m.role?.includes("团队负责人") || m.title?.includes("团队负责人")),
+);
+const normalMembers = computed(() => rawMembers.value.filter((m) => m.id !== teamLead.value?.id));
+const groupedMembers = computed(() =>
   teamGroups.value.map((group) => ({
     ...group,
-    members: normalMembers().filter((m) => m.team_group?.key === group.key),
-  }));
+    members: normalMembers.value.filter((m) => m.team_group?.key === group.key),
+  })),
+);
 </script>
 
 <template>
@@ -57,26 +59,26 @@ const groupedMembers = () =>
     </div>
   </section>
 
-  <section v-if="teamLead()" class="section team-lead-card">
-    <div class="lead-avatar">{{ teamLead()!.name.slice(0, 1) }}</div>
+  <section v-if="teamLead" class="section team-lead-card">
+    <div class="lead-avatar">{{ teamLead.name.slice(0, 1) }}</div>
     <div class="lead-main">
       <div class="lead-title-row">
         <div>
           <div class="eyebrow">Team Lead</div>
-          <h2>{{ teamLead()!.name }}</h2>
+          <h2>{{ teamLead.name }}</h2>
         </div>
         <span class="lead-badge">团队负责人</span>
       </div>
-      <div class="lead-role">{{ teamLead()!.title || "遥感团队负责人" }}</div>
+      <div class="lead-role">{{ teamLead.title || "遥感团队负责人" }}</div>
       <p>
         {{
-          teamLead()!.description ||
+          teamLead.description ||
           "负责天地一体遥感智能模型体系的总体规划、技术架构设计与工程化落地，统筹各研究组协同推进。"
         }}
       </p>
       <div class="project-tags">
         <span
-          v-for="project in resolveProjects(teamLead()!.projects) ?? []"
+          v-for="project in resolveProjects(teamLead.projects) ?? []"
           :key="project"
           class="project-tag project-tag-strong"
           >{{ project }}</span
@@ -86,7 +88,7 @@ const groupedMembers = () =>
   </section>
 
   <section class="section team-groups-grid">
-    <div v-for="group in groupedMembers()" :key="group.key" class="team-group-card">
+    <div v-for="group in groupedMembers" :key="group.key" class="team-group-card">
       <div class="group-card-head">
         <div>
           <div class="eyebrow">{{ group.short_title }}</div>

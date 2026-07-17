@@ -404,11 +404,18 @@
   </div>
 </template>
 
-<script setup>
-import { computed, ref } from 'vue'
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import RadarVisual from '@/components/marketing/RadarVisual.vue'
 
 const searchKeyword = ref('')
+const debouncedKeyword = ref('')
+
+let searchTimer: number | undefined
+watch(searchKeyword, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => { debouncedKeyword.value = val }, 200)
+})
 const selectedTime = ref('最近7天')
 const selectedType = ref('全部')
 const selectedTopic = ref('全部')
@@ -528,7 +535,7 @@ const topicOptions = ['预训练', '变化检测', '目标检测', '热风险', 
 const flattenItems = computed(() => timelineGroups.flatMap((group) => group.items))
 
 const filteredItems = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase()
+  const keyword = debouncedKeyword.value.trim().toLowerCase()
 
   return flattenItems.value.filter((item) => {
     const matchKeyword =

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { getToken } from "@/lib/auth";
@@ -43,12 +43,16 @@ onMounted(async () => {
   if (!auth.loading && auth.isAdmin()) await fetchData();
 });
 
-const unwatch = auth.$subscribe(() => {
-  if (!auth.loading) {
-    if (!auth.isAdmin()) router.push("/");
-    else if (auth.isAdmin() && datasets.value.length === 0) fetchData();
+const unwatch = auth.$subscribe((mutation, state) => {
+  if (!state.loading) {
+    if (!state.user?.is_admin) router.push("/");
+    else if (datasets.value.length === 0) fetchData();
     unwatch();
   }
+});
+
+onBeforeUnmount(() => {
+  unwatch();
 });
 
 async function fetchData() {
@@ -60,15 +64,17 @@ async function fetchData() {
   }
   try {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-    const datasetsResponse = await fetch(`${API_BASE_URL}/api/admin/datasets/candidates`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const [datasetsResponse, statsResponse] = await Promise.all([
+      fetch(`${API_BASE_URL}/api/admin/datasets/candidates`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      fetch(`${API_BASE_URL}/api/admin/datasets/statistics`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
     if (!datasetsResponse.ok) throw new Error("获取数据集失败");
     const datasetsData = await datasetsResponse.json();
     datasets.value = datasetsData.items || [];
-    const statsResponse = await fetch(`${API_BASE_URL}/api/admin/datasets/statistics`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
     if (statsResponse.ok) {
       statistics.value = await statsResponse.json();
     }

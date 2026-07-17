@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import {
   getModelBySlug,
@@ -16,6 +16,8 @@ const pipeline = ref<any>();
 const steps = ref<PipelineStep[]>([]);
 const inputs = ref<PipelineInputDataset[]>([]);
 const outputs = ref<PipelineOutput[]>([]);
+const sortedSteps = computed(() => [...steps.value].sort((a, b) => a.stepOrder - b.stepOrder));
+const usageTypeMap: Record<string, string> = { input: "输入", label: "标签", auxiliary: "辅助", output: "输出" };
 
 onMounted(async () => {
   const modelId = route.params.modelId as string;
@@ -24,9 +26,11 @@ onMounted(async () => {
   const pipe = await getPipelineByModel(modelId);
   pipeline.value = pipe;
   if (pipe) {
-    steps.value = await getPipelineSteps(pipe.id);
-    inputs.value = await getPipelineInputs(pipe.id);
-    outputs.value = await getPipelineOutputs(pipe.id);
+    [steps.value, inputs.value, outputs.value] = await Promise.all([
+      getPipelineSteps(pipe.id),
+      getPipelineInputs(pipe.id),
+      getPipelineOutputs(pipe.id),
+    ]);
   }
 });
 </script>
@@ -58,7 +62,7 @@ onMounted(async () => {
             <h3>{{ item.datasetName }}</h3>
             <p>{{ item.note }}</p>
             <div class="pld-muted pld-small">
-              用途：{{ { input: "输入", label: "标签", auxiliary: "辅助", output: "输出" }[item.usageType] }} ·
+              用途：{{ usageTypeMap[item.usageType] }} ·
               {{ item.required ? "必需数据" : "可选数据" }}
             </div>
           </div>
@@ -71,7 +75,7 @@ onMounted(async () => {
         </div>
         <div class="pld-pipeline-flow">
           <div
-            v-for="step in [...steps].sort((a, b) => a.stepOrder - b.stepOrder)"
+            v-for="step in sortedSteps"
             :key="step.id"
             class="pld-pipeline-step"
           >

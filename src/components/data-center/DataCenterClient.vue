@@ -55,21 +55,25 @@ const activeSourceName = computed(() =>
     : props.sources.find((item) => item.key === activeSource.value)?.name || "全部来源",
 );
 
+const filterVersion = ref(0);
+
 function toggleFilter(groupKey: string, item: FilterOption) {
   const idx = activeFilters.value.findIndex(
     (active) => active.groupKey === groupKey && active.item.name === item.name,
   );
   if (idx >= 0) activeFilters.value.splice(idx, 1);
   else activeFilters.value.push({ groupKey, item });
+  filterVersion.value++;
 }
 
 function clearFilters() {
   activeSource.value = "all";
   activeFilters.value = [];
+  filterVersion.value++;
 }
 
 onMounted(loadCards);
-watch([activeSource, activeFilters], loadCards, { deep: true });
+watch([activeSource, filterVersion], loadCards);
 </script>
 
 <template>

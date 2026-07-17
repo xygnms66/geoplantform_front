@@ -17,7 +17,8 @@ import { dataStores as storageFallback } from "./workbenchStudioData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const REQUEST_TIMEOUT_MS = 5000;
-const responseCache = new Map<string, unknown>();
+const CACHE_TTL = 60_000;
+const responseCache = new Map<string, { data: unknown; timestamp: number }>();
 
 export const FILTER_FALLBACK: DataFilterGroup[] = [
   {
@@ -106,8 +107,9 @@ export function hasActiveCatalogFilters(filter: DataCatalogFilter): boolean {
 }
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
-  if (responseCache.has(path)) {
-    return responseCache.get(path) as T;
+  const cached = responseCache.get(path);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data as T;
   }
 
   try {
@@ -124,7 +126,7 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
     }
 
     const data = (await response.json()) as T;
-    responseCache.set(path, data);
+    responseCache.set(path, { data, timestamp: Date.now() });
     return data;
   } catch {
     return fallback;
@@ -163,8 +165,9 @@ export function getDataCenterSources(): Promise<DataSourceCard[]> {
 
 export async function getDataCenterFilters(): Promise<DataFilterGroup[]> {
   const cacheKey = "/datasets/filters";
-  if (responseCache.has(cacheKey)) {
-    return responseCache.get(cacheKey) as DataFilterGroup[];
+  const cached = responseCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data as DataFilterGroup[];
   }
 
   try {
@@ -182,7 +185,7 @@ export async function getDataCenterFilters(): Promise<DataFilterGroup[]> {
 
     const data = (await response.json()) as DataCatalogFiltersResponse;
     const filters = data.groups ?? FILTER_FALLBACK;
-    responseCache.set(cacheKey, filters);
+    responseCache.set(cacheKey, { data: filters, timestamp: Date.now() });
     return filters;
   } catch {
     return FILTER_FALLBACK;

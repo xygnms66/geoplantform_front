@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { getAchievements, getDashboard, getPersonalMembers, getProjects, getTeamGroups } from "@/lib/api";
 import { getDataCatalogCards } from "@/lib/dataCenterApi";
 import type { Achievement, DashboardSummary, PersonalMember, Project, TeamGroup, DataCatalogCard } from "@/types";
@@ -39,6 +39,17 @@ onMounted(async () => {
   achievements.value = a;
   projects.value = p;
   dataCatalogCards.value = dc;
+});
+
+const projectMap = computed(() => new Map(projects.value.map((p) => [p.id, p])));
+
+const memberCountByGroup = computed(() => {
+  const map = new Map<string, number>();
+  for (const m of members.value) {
+    const key = m.team_group?.key;
+    if (key) map.set(key, (map.get(key) || 0) + 1);
+  }
+  return map;
 });
 </script>
 
@@ -104,7 +115,7 @@ onMounted(async () => {
             <h2>{{ group.title }}</h2>
           </div>
           <div class="group-count">
-            <strong>{{ members.filter((m) => m.team_group?.key === group.key).length }}</strong>
+            <strong>{{ memberCountByGroup.get(group.key) || 0 }}</strong>
             <span>人</span>
           </div>
         </div>
@@ -129,7 +140,7 @@ onMounted(async () => {
         v-for="item in achievements.slice(0, 4)"
         :key="item.id"
         :item="item"
-        :project="projects.find((p) => p.id === item.project_id)"
+        :project="projectMap.get(item.project_id)"
       />
     </div>
   </section>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { getAchievements, getProjects } from "@/lib/api";
 import type { Achievement, Project } from "@/types";
 import { achievements as achievementFallback, projects as projectFallback } from "@/lib/staticData";
@@ -11,6 +11,8 @@ const projects = ref<Project[]>(projectFallback);
 onMounted(async () => {
   [achievements.value, projects.value] = await Promise.all([getAchievements(), getProjects()]);
 });
+
+const projectMap = computed(() => new Map(projects.value.map((p) => [p.id, p])));
 </script>
 
 <template>
@@ -24,7 +26,7 @@ onMounted(async () => {
       v-for="item in achievements"
       :key="item.id"
       :item="item"
-      :project="projects.find((p) => p.id === item.project_id)"
+      :project="projectMap.get(item.project_id)"
     />
   </section>
 </template>
