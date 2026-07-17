@@ -1,11 +1,28 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import { projectsPluginTabs } from "@/components/studio/plugins/projects/tabs";
 import { useStudioPluginTabs } from "@/components/studio/shell/useStudioPluginTabs";
 import { projectModules, projectProjects, projectSummary } from "@/lib/workbenchStudioData";
 
 const { tabs, activeTab, activeView, setActiveTab } = useStudioPluginTabs(projectsPluginTabs, "board");
 const currentProject = ref(projectProjects[0]);
+
+const tabBarRef = ref<HTMLElement | null>(null);
+const tabRefs = ref<HTMLElement[]>([]);
+const indicatorStyle = ref({ width: "0px", transform: "translateX(0px)" });
+
+function updateIndicator() {
+  const idx = tabs.findIndex((t) => t.key === activeTab.value);
+  const el = tabRefs.value[idx];
+  if (!el || !tabBarRef.value) return;
+  indicatorStyle.value = {
+    width: `${el.offsetWidth}px`,
+    transform: `translateX(${el.offsetLeft}px) translateY(-50%)`,
+  };
+}
+
+watch(activeTab, () => nextTick(updateIndicator));
+onMounted(() => nextTick(updateIndicator));
 </script>
 
 <template>
@@ -35,10 +52,15 @@ const currentProject = ref(projectProjects[0]);
       </article>
     </section>
 
-    <section class="project-tabs panel">
+    <section class="project-tabs panel" ref="tabBarRef">
+      <div
+        class="tab-indicator"
+        :style="indicatorStyle"
+      />
       <button
         v-for="tab in tabs"
         :key="tab.key"
+        ref="tabRefs"
         :class="{ active: activeTab === tab.key }"
         type="button"
         @click="setActiveTab(tab.key)"
@@ -270,24 +292,67 @@ const currentProject = ref(projectProjects[0]);
 }
 
 .project-tabs {
+  position: relative;
   width: fit-content;
   display: flex;
-  gap: 8px;
+  gap: 2px;
   padding: 8px;
+  isolation: isolate;
+}
+
+.tab-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 32px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.35), rgba(37, 99, 235, 0.25));
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  box-shadow:
+    0 0 24px rgba(14, 165, 233, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(8px);
+  transition: all 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .project-tabs button {
+  position: relative;
+  z-index: 1;
   height: 38px;
   padding: 0 16px;
   border-radius: 12px;
   color: var(--muted);
   background: transparent;
   font-weight: 850;
+  transition: color 0.25s ease;
+  animation: tabFadeIn 0.4s ease backwards;
+}
+
+.project-tabs button:nth-child(2) { animation-delay: 0.03s; }
+.project-tabs button:nth-child(3) { animation-delay: 0.06s; }
+.project-tabs button:nth-child(4) { animation-delay: 0.09s; }
+.project-tabs button:nth-child(5) { animation-delay: 0.12s; }
+.project-tabs button:nth-child(6) { animation-delay: 0.15s; }
+
+.project-tabs button:hover {
+  color: #bfd9ff;
 }
 
 .project-tabs button.active {
   color: #fff;
-  background: rgba(59, 130, 246, 0.72);
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .project-layout {
