@@ -13,95 +13,7 @@ import { getToken } from "./auth";
 import { dataCatalogCards, dataSources } from "./dataCenterStaticData";
 import { dataStores as storageFallback } from "./workbenchStudioData";
 
-// ==================================
-// MOCK START - 开发用，上线删除本块
-// ==================================
-const MOCK_DATASETS: DatasetRow[] = dataCatalogCards.map((c, i) => ({
-  id: c.id,
-  name: c.title + (c.region ? ` ${c.region}` : ""),
-  product_id: c.id,
-  product_name: c.title,
-  region: c.region || null,
-  time_start: c.beginTime ? c.beginTime + "-01" : null,
-  time_end: c.endTime ? c.endTime + "-01" : null,
-  status: c.status === "可用" ? "AVAILABLE" : "DRAFT",
-  status_label: c.status,
-  ingestion_method: "MANUAL",
-  storage_status: c.storageStatus === "本地存储" ? "STORED" : "EXTERNAL_ONLY",
-  owner_id: 13,
-}));
 
-const MOCK_DATA_PRODUCTS: DataProduct[] = dataCatalogCards.map((c, i) => ({
-  id: c.id,
-  name: c.title,
-  source_id: i + 1,
-  source_type: c.source.toUpperCase(),
-  provider: c.title,
-  platform: c.title,
-  sensor: null,
-  product_level: null,
-  description: c.description,
-  license: "PUBLIC",
-  resolution_value: c.resolution ? parseFloat(c.resolution) || null : null,
-  resolution_unit: "m",
-  format: c.format,
-  scope_ids: [1],
-  modality_ids: [1],
-}));
-
-const MOCK_FORM_OPTIONS: DataProductFormOptions = {
-  sources: [
-    { value: "GEE", label: "Google Earth Engine", description: null },
-    { value: "GEOREMOTE", label: "GeoRemote", description: null },
-    { value: "PAPER", label: "论文开源数据", description: null },
-    { value: "INTERNAL", label: "内部数据", description: null },
-  ],
-  scopes: [
-    { id: 1, name: "预训练", value: "预训练", description: null },
-    { id: 2, name: "变化检测", value: "变化检测", description: null },
-    { id: 3, name: "目标检测", value: "目标检测", description: null },
-    { id: 4, name: "热风险", value: "热风险", description: null },
-    { id: 5, name: "语义分割", value: "语义分割", description: null },
-    { id: 6, name: "地物分类", value: "地物分类", description: null },
-  ],
-  modalities: [
-    { id: 1, name: "多光谱", value: "多光谱", description: null },
-    { id: 2, name: "SAR", value: "SAR", description: null },
-    { id: 3, name: "光学", value: "光学", description: null },
-    { id: 4, name: "DEM", value: "DEM", description: null },
-    { id: 5, name: "土地覆盖", value: "土地覆盖", description: null },
-    { id: 6, name: "特征嵌入", value: "特征嵌入", description: null },
-    { id: 7, name: "矢量", value: "矢量", description: null },
-    { id: 8, name: "地表温度", value: "地表温度", description: null },
-  ],
-  productLevels: [
-    { value: "L1", label: "L1", description: null },
-    { value: "L2", label: "L2", description: null },
-    { value: "L2A", label: "L2A", description: null },
-    { value: "L3", label: "L3", description: null },
-    { value: "L4", label: "L4", description: null },
-  ],
-  resolutionUnits: ["cm", "m", "km", "deg", "arcsec"],
-  formats: [
-    { value: "GeoTIFF", label: "GeoTIFF", description: null },
-    { value: "COG", label: "COG", description: null },
-    { value: "Parquet", label: "Parquet", description: null },
-    { value: "GeoJSON", label: "GeoJSON", description: null },
-    { value: "Shapefile", label: "Shapefile", description: null },
-  ],
-  licenses: [
-    { value: "PUBLIC", label: "公开", description: null },
-    { value: "INTERNAL", label: "内部", description: null },
-    { value: "CC_BY_4_0", label: "CC-BY-4.0", description: null },
-  ],
-};
-
-function isMockMode(): boolean {
-  return import.meta.env.VITE_USE_MOCK === "true" || import.meta.env.VITE_USE_MOCK === "1";
-}
-// ==================================
-// MOCK END（上面这块和下面每个函数里的 if(isMockMode) 一起删）
-// ==================================
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const REQUEST_TIMEOUT_MS = 5000;
@@ -335,9 +247,6 @@ async function postJsonOrThrow<T>(path: string, body: unknown): Promise<T> {
 }
 
 export function getDataProducts(): Promise<DataProduct[]> {
-  // ========== MOCK START ==========
-  if (isMockMode()) return Promise.resolve(MOCK_DATA_PRODUCTS);
-  // ========== MOCK END ==========
   return fetchJsonOrThrow<DataProduct[]>("/data-products").catch(() => []);
 }
 
@@ -346,13 +255,6 @@ export function createDataProduct(payload: DataProductCreate): Promise<DataProdu
 }
 
 export function getDataProduct(productId: number): Promise<DataProductDetail> {
-  // ========== MOCK START ==========
-  if (isMockMode()) {
-    const p = MOCK_DATA_PRODUCTS.find((d) => d.id === productId);
-    if (!p) return Promise.reject(new Error("产品不存在"));
-    return Promise.resolve({ ...p, scopes: [], modalities: [], scope_links: [], modality_links: [] });
-  }
-  // ========== MOCK END ==========
   return fetchJsonOrThrow<DataProductDetail>(`/data-products/${productId}`);
 }
 
@@ -393,10 +295,6 @@ type DataProductFormOptionsResponse = {
 };
 
 export async function getDataProductFormOptions(): Promise<DataProductFormOptions> {
-  // ========== MOCK START ==========
-  if (isMockMode()) return MOCK_FORM_OPTIONS;
-  // ========== MOCK END ==========
-
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -436,13 +334,6 @@ export async function getDataProductFormOptions(): Promise<DataProductFormOption
 }
 
 export function createDataset(payload: DatasetCreate): Promise<unknown> {
-  // ========== MOCK START ==========
-  if (isMockMode()) {
-    const newDs = { id: Date.now(), ...payload, name: `数据集 ${Date.now()}`, status: "DRAFT", status_label: "未处理" };
-    return Promise.resolve(newDs);
-  }
-  // ========== MOCK END ==========
-
   const token = getToken();
   const headers: HeadersInit = {};
   if (token) {
@@ -478,9 +369,6 @@ export type DatasetUpdatePayload = {
 };
 
 export function getDatasets(): Promise<DatasetRow[]> {
-  // ========== MOCK START ==========
-  if (isMockMode()) return Promise.resolve(MOCK_DATASETS);
-  // ========== MOCK END ==========
   return fetchJsonOrThrow<DatasetRow[]>("/datasets").catch(() => []);
 }
 
