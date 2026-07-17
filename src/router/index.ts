@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,7 +13,16 @@ const router = createRouter({
     { path: "/team", name: "team", component: () => import("@/views/Team.vue") },
     { path: "/achievements", name: "achievements", component: () => import("@/views/Achievements.vue") },
     { path: "/data", name: "data", component: () => import("@/views/DataCenter.vue") },
-    { path: "/admin/datasets", name: "admin-datasets", component: () => import("@/views/AdminDatasets.vue") },
+    {
+      path: "/admin/datasets",
+      name: "admin-datasets",
+      beforeEnter: (to, from, next) => {
+        const auth = useAuthStore();
+        if (!auth.loading && !auth.isAdmin()) next("/");
+        else next();
+      },
+      component: () => import("@/views/AdminDatasets.vue"),
+    },
     { path: "/information", name: "information", component: () => import("@/views/RemoteSensingIntelligence.vue") },
     { path: "/workbench", name: "workbench", component: () => import("@/views/WorkbenchPlatform.vue") },
   ],

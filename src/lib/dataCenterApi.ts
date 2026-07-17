@@ -113,7 +113,10 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal });
+    const headers: HeadersInit = {};
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal, headers });
     clearTimeout(timeout);
 
     if (!response.ok) {
@@ -132,9 +135,12 @@ async function postJson<T>(path: string, body: unknown, fallback: T): Promise<T>
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const token = getToken();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     const response = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
       cache: "no-store",
       signal: controller.signal,
@@ -164,7 +170,10 @@ export async function getDataCenterFilters(): Promise<DataFilterGroup[]> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const response = await fetch(`${API_BASE_URL}${cacheKey}`, { cache: "no-store", signal: controller.signal });
+    const headers: HeadersInit = {};
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE_URL}${cacheKey}`, { cache: "no-store", signal: controller.signal, headers });
     clearTimeout(timeout);
 
     if (!response.ok) {
@@ -299,9 +308,13 @@ export async function getDataProductFormOptions(): Promise<DataProductFormOption
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
+    const headers: HeadersInit = {};
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     const response = await fetch(`${API_BASE_URL}/data-products/options`, {
       cache: "no-store",
       signal: controller.signal,
+      headers,
     });
 
     if (!response.ok) {
@@ -416,7 +429,10 @@ export async function getStorageBuckets(activeOnly = false): Promise<StorageBuck
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal });
+    const headers: HeadersInit = {};
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal, headers });
     clearTimeout(timeout);
     if (!response.ok) {
       return toFallbackStorageBuckets();

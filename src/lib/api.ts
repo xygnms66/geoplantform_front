@@ -1,3 +1,4 @@
+import { getToken } from "./auth";
 import { achievements, dashboardFallback, personalMembers, projects, teamGroups } from "./staticData";
 import type { Achievement, DashboardSummary, PersonalMember, Project, TeamGroup } from "@/types";
 
@@ -12,7 +13,10 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 300);
-    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal });
+    const headers: HeadersInit = {};
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store", signal: controller.signal, headers });
     clearTimeout(timeout);
 
     if (!response.ok) {
